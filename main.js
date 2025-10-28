@@ -27,10 +27,6 @@ class WebGLDriver {
     this.animationId = null;
     this.isAnimating = false;
 
-    // Event handlers
-    this.onWindowResize = this.onWindowResize.bind(this);
-    this.animate = this.animate.bind(this);
-
     // Initialize the ThreeJS setup
     this.init();
   }
@@ -38,7 +34,7 @@ class WebGLDriver {
   /**
    * Initialize the ThreeJS scene, camera, renderer, and other components
    */
-  init() {
+  init = () => {
     this.createScene();
     this.createCamera();
     this.createRenderer();
@@ -57,7 +53,7 @@ class WebGLDriver {
     this.startAnimation();
   }
 
-  createScene() {
+  createScene = () => {
     this.scene = new THREE.Scene();
     if (this.config.backgroundColor !== null) {
       this.scene.background = new THREE.Color(this.config.backgroundColor);
@@ -68,7 +64,7 @@ class WebGLDriver {
     }
   }
 
-  createCamera() {
+  createCamera = () => {
     const aspect = this.config.width / this.config.height;
     this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
     this.camera.position.set(0, 0, 5);
@@ -78,7 +74,7 @@ class WebGLDriver {
     }
   }
 
-  createRenderer() {
+  createRenderer = () => {
     this.renderer = new THREE.WebGLRenderer({
       antialias: this.config.antialias,
       alpha: this.config.alpha
@@ -99,7 +95,7 @@ class WebGLDriver {
     }
   }
 
-  createLights() {
+  createLights = () => {
     // Ambient light for overall illumination
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
     this.scene.add(ambientLight);
@@ -123,7 +119,7 @@ class WebGLDriver {
     }
   }
 
-  createControls() {
+  createControls = () =>{
     if (typeof THREE.OrbitControls !== 'undefined') {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
@@ -137,7 +133,7 @@ class WebGLDriver {
     }
   }
 
-  createStats() {
+  createStats = () => {
     if (typeof Stats !== 'undefined') {
       this.stats = new Stats();
       this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb
@@ -151,11 +147,11 @@ class WebGLDriver {
     }
   }
 
-  setupEventListeners() {
+  setupEventListeners = () => {
     window.addEventListener('resize', this.onWindowResize, false);
   }
 
-  onWindowResize() {
+  onWindowResize = () => {
     this.config.width = window.innerWidth;
     this.config.height = window.innerHeight;
 
@@ -170,14 +166,14 @@ class WebGLDriver {
     }
   }
 
-  startAnimation() {
+  startAnimation = () => {
     if (!this.isAnimating) {
       this.isAnimating = true;
       this.animate();
     }
   }
 
-  stopAnimation() {
+  stopAnimation = () => {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
@@ -186,7 +182,7 @@ class WebGLDriver {
   }
 
 
-  animate() {
+  animate = () => {
     if (!this.isAnimating) return;
 
     this.animationId = requestAnimationFrame(this.animate);
@@ -216,17 +212,17 @@ class WebGLDriver {
     }
   }
 
-  addToScene(object) {
+  addToScene = (object) => {
     this.scene.add(object);
     return object;
   }
 
-  removeFromScene(object) {
+  removeFromScene = (object) => {
     this.scene.remove(object);
     return object;
   }
 
-  worldToScreen(position) {
+  worldToScreen = (position) => {
     const vector = position.clone();
     vector.project(this.camera);
     
@@ -243,7 +239,7 @@ class WebGLDriver {
    * @param {number} z - Z depth (default: 0.5)
    * @returns {THREE.Vector3} 3D world position
    */
-  screenToWorld(x, y, z = 0.5) {
+  screenToWorld = (x, y, z = 0.5) => {
     const vector = new THREE.Vector3(
       (x / this.config.width) * 2 - 1,
       -(y / this.config.height) * 2 + 1,
@@ -253,7 +249,7 @@ class WebGLDriver {
     return vector.unproject(this.camera);
   }
 
-  dispose() {
+  dispose = () => {
     this.stopAnimation();
     
     // Remove event listeners
@@ -284,7 +280,7 @@ class WebGLDriver {
     }
   }
 
-  setup() {
+  setup = () => {
     // Override this method in your experiments
     if (this.config.debug) {
       console.log('Setup method called - override this in your experiment');
@@ -297,7 +293,7 @@ class WebGLDriver {
    * @param {number} deltaTime - Time since last frame in seconds
    * @param {number} elapsedTime - Total elapsed time in seconds
    */
-  update(deltaTime, elapsedTime) {
+  update = (deltaTime, elapsedTime) => {
     // Override this method in your experiments
     // Example: rotate objects, update animations, etc.
   }
