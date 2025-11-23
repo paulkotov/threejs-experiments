@@ -92,37 +92,7 @@
     scene.add(torus);
     objects.push(torus);
 
-    // Animation loop
-    const clock = new THREE.Clock();
 
-    function animate() {
-      requestAnimationFrame(animate);
-
-      const deltaTime = clock.getDelta();
-      const elapsedTime = clock.getElapsedTime();
-
-      // Animate objects
-      cube.rotation.x += deltaTime;
-      cube.rotation.y += deltaTime * 0.5;
-
-      sphere.position.y = Math.sin(elapsedTime * 2) * 0.5;
-
-      cylinder.rotation.y += deltaTime * 2;
-
-      torus.rotation.x += deltaTime * 0.5;
-      torus.rotation.y += deltaTime * 0.3;
-
-      renderer.render(scene, camera);
-    }
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    animate();
 
   </script>
 </body>
