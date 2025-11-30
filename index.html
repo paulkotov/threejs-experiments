@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <!-- ThreeJS Controls -->
-  <!-- <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script> -->
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Stats.js for performance monitoring (optional) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js"></script>
@@ -20,80 +20,102 @@
 </head>
 
 <body>
+  <!-- Load the WebGLDriver class -->
+  <script src="main.js"></script>
+
   <script>
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x222222);
-
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 2, 5);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    document.body.appendChild(renderer.domElement);
-
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
-
-    // Create multiple 3D objects
-    const objects = [];
-
-    // 1. Green rotating cube
-    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube.position.set(-2, 0, 0);
-    cube.castShadow = true;
-    scene.add(cube);
-    objects.push(cube);
-
-    // 2. Red sphere
-    const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
-    const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphere.position.set(0, 0, 0);
-    sphere.castShadow = true;
-    scene.add(sphere);
-    objects.push(sphere);
-
-    // 3. Blue cylinder
-    const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 2, 32);
-    const cylinderMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
-    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-    cylinder.position.set(2, 0, 0);
-    cylinder.castShadow = true;
-    scene.add(cylinder);
-    objects.push(cylinder);
-
-    // 4. Ground plane
-    const planeGeometry = new THREE.PlaneGeometry(20, 20);
-    const planeMaterial = new THREE.MeshLambertMaterial({ color: 0x888888 });
-    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-    plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -2;
-    plane.receiveShadow = true;
-    scene.add(plane);
-
-    // 5. Wireframe torus
-    const torusGeometry = new THREE.TorusGeometry(1, 0.3, 16, 100);
-    const torusMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffff00,
-      wireframe: true
+    // Create an instance of WebGLDriver with custom configuration
+    const driver = new WebGLDriver({
+      backgroundColor: 0x1a1a2e,
+      antialias: true,
+      shadows: true,
+      controls: true,
+      stats: true,
+      debug: true
     });
-    const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-    torus.position.set(0, 2, 0);
-    scene.add(torus);
-    objects.push(torus);
 
+    // Override the setup method to create our 3D scene
+    driver.setup = function () {
+      // Create a rotating cube
+      const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+      const cubeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x00ff88,
+        metalness: 0.5,
+        roughness: 0.2
+      });
+      this.cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+      this.cube.position.set(-2, 0, 0);
+      this.cube.castShadow = true;
+      this.cube.receiveShadow = true;
+      this.addToScene(this.cube);
 
+      // Create a sphere
+      const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+      const sphereMaterial = new THREE.MeshStandardMaterial({
+        color: 0xff6b6b,
+        metalness: 0.3,
+        roughness: 0.4
+      });
+      this.sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+      this.sphere.position.set(0, 0, 0);
+      this.sphere.castShadow = true;
+      this.sphere.receiveShadow = true;
+      this.addToScene(this.sphere);
 
+      // Create a torus
+      const torusGeometry = new THREE.TorusGeometry(0.6, 0.2, 16, 100);
+      const torusMaterial = new THREE.MeshStandardMaterial({
+        color: 0x4ecdc4,
+        metalness: 0.6,
+        roughness: 0.3
+      });
+      this.torus = new THREE.Mesh(torusGeometry, torusMaterial);
+      this.torus.position.set(2, 0, 0);
+      this.torus.castShadow = true;
+      this.torus.receiveShadow = true;
+      this.addToScene(this.torus);
+
+      // Create a ground plane
+      const planeGeometry = new THREE.PlaneGeometry(10, 10);
+      const planeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x333333,
+        metalness: 0.1,
+        roughness: 0.8
+      });
+      this.plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      this.plane.rotation.x = -Math.PI / 2;
+      this.plane.position.y = -1.5;
+      this.plane.receiveShadow = true;
+      this.addToScene(this.plane);
+
+      // Add extra point light for more interesting lighting
+      const pointLight = new THREE.PointLight(0xff9900, 1, 100);
+      pointLight.position.set(-5, 3, -5);
+      this.addToScene(pointLight);
+
+      console.log('3D Scene setup complete!');
+    };
+
+    // Override the update method to add animations
+    driver.update = function (deltaTime, elapsedTime) {
+      if (this.cube) {
+        this.cube.rotation.x += deltaTime * 0.5;
+        this.cube.rotation.y += deltaTime * 0.8;
+      }
+
+      if (this.sphere) {
+        this.sphere.position.y = Math.sin(elapsedTime * 2) * 0.5;
+        this.sphere.rotation.y += deltaTime * 1.5;
+      }
+
+      if (this.torus) {
+        this.torus.rotation.x += deltaTime * 0.7;
+        this.torus.rotation.y += deltaTime * 0.3;
+      }
+    };
+
+    // Manually call setup since it was already called (empty) in the constructor
+    driver.setup();
   </script>
 </body>
 
