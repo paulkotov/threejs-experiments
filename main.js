@@ -12,8 +12,13 @@ class WebGLDriver {
       controls: options.controls !== false, // Default to true
       stats: options.stats || false,
       debug: options.debug || false,
+      autoStart: options.autoStart !== false, // Default to true
       ...options
     };
+
+    // Store custom setup and update callbacks if provided
+    this._setupCallback = options.setup || null;
+    this._updateCallback = options.update || null;
 
     // Core ThreeJS components
     this.scene = null;
@@ -26,6 +31,9 @@ class WebGLDriver {
     this.clock = new THREE.Clock();
     this.animationId = null;
     this.isAnimating = false;
+
+    // Scene objects (for user convenience)
+    this.objects = {};
 
     // Initialize the ThreeJS setup
     this.init();
@@ -49,8 +57,18 @@ class WebGLDriver {
     }
 
     this.setupEventListeners();
-    this.setup(); // Call user-defined setup method
-    this.startAnimation();
+    
+    // Call user-defined setup method (either from callback or overridden method)
+    if (this._setupCallback) {
+      this._setupCallback.call(this);
+    } else {
+      this.setup();
+    }
+    
+    // Auto-start animation if configured
+    if (this.config.autoStart) {
+      this.startAnimation();
+    }
   }
 
   createScene = () => {
@@ -200,8 +218,12 @@ class WebGLDriver {
       this.controls.update();
     }
 
-    // Call user-defined update method
-    this.update(deltaTime, elapsedTime);
+    // Call user-defined update method (either from callback or overridden method)
+    if (this._updateCallback) {
+      this._updateCallback.call(this, deltaTime, elapsedTime);
+    } else {
+      this.update(deltaTime, elapsedTime);
+    }
 
     // Render the scene
     this.renderer.render(this.scene, this.camera);
@@ -280,21 +302,152 @@ class WebGLDriver {
     }
   }
 
+  /**
+   * Setup method - override this or provide as callback to create your scene
+   * Called once during initialization after scene, camera, renderer are ready
+   */
   setup = () => {
-    // Override this method in your experiments
+    // Override this method in your experiments or pass setup callback in options
     if (this.config.debug) {
-      console.log('Setup method called - override this in your experiment');
+      console.log('Setup method called - override this in your experiment or pass setup callback');
     }
   }
 
   /**
-   * Update method - override this to add your own animation logic
+   * Update method - override this or provide as callback to add your own animation logic
    * Called every frame in the animation loop
    * @param {number} deltaTime - Time since last frame in seconds
    * @param {number} elapsedTime - Total elapsed time in seconds
    */
   update = (deltaTime, elapsedTime) => {
-    // Override this method in your experiments
+    // Override this method in your experiments or pass update callback in options
     // Example: rotate objects, update animations, etc.
+  }
+
+  /**
+   * Helper method to create a mesh and add it to the scene
+   * @param {THREE.Geometry} geometry - The geometry for the mesh
+   * @param {THREE.Material} material - The material for the mesh
+   * @param {Object} options - Optional configuration (position, rotation, scale, castShadow, receiveShadow, name)
+   * @returns {THREE.Mesh} The created mesh
+   */
+  createMesh = (geometry, material, options = {}) => {
+    const mesh = new THREE.Mesh(geometry, material);
+    
+    if (options.position) {
+      mesh.position.set(options.position.x || 0, options.position.y || 0, options.position.z || 0);
+    }
+    
+    if (options.rotation) {
+      mesh.rotation.set(options.rotation.x || 0, options.rotation.y || 0, options.rotation.z || 0);
+    }
+    
+    if (options.scale) {
+      if (typeof options.scale === 'number') {
+        mesh.scale.setScalar(options.scale);
+      } else {
+        mesh.scale.set(options.scale.x || 1, options.scale.y || 1, options.scale.z || 1);
+      }
+    }
+    
+    if (options.castShadow !== undefined) {
+      mesh.castShadow = options.castShadow;
+    }
+    
+    if (options.receiveShadow !== undefined) {
+      mesh.receiveShadow = options.receiveShadow;
+    }
+    
+    if (options.name) {
+      mesh.name = options.name;
+      this.objects[options.name] = mesh;
+    }
+    
+    this.addToScene(mesh);
+    return mesh;
+  }
+
+  /**
+   * Helper method to create a light and add it to the scene
+   * @param {string} type - Light type: 'ambient', 'directional', 'point', 'spot', 'hemisphere'
+   * @param {Object} options - Light configuration (color, intensity, position, etc.)
+   * @returns {THREE.Light} The created light
+   */
+  createLight = (type, options = {}) => {
+    let light;
+    
+    switch (type.toLowerCase()) {
+      case 'ambient':
+        light = new THREE.AmbientLight(options.color || 0xffffff, options.intensity || 1);
+        break;
+      case 'directional':
+        light = new THREE.DirectionalLight(options.color || 0xffffff, options.intensity || 1);
+        break;
+      case 'point':
+        light = new THREE.PointLight(options.color || 0xffffff, options.intensity || 1, options.distance || 0, options.decay || 1);
+        break;
+      case 'spot':
+        light = new THREE.SpotLight(options.color || 0xffffff, options.intensity || 1, options.distance || 0, options.angle || Math.PI / 3, options.penumbra || 0, options.decay || 1);
+        break;
+      case 'hemisphere':
+        light = new THREE.HemisphereLight(options.skyColor || 0xffffff, options.groundColor || 0x444444, options.intensity || 1);
+        break;
+      default:
+        console.warn(`Unknown light type: ${type}`);
+        return null;
+    }
+    
+    if (options.position && light.position) {
+      light.position.set(options.position.x || 0, options.position.y || 0, options.position.z || 0);
+    }
+    
+    if (options.castShadow && this.config.shadows) {
+      light.castShadow = true;
+      if (light.shadow) {
+        light.shadow.mapSize.width = options.shadowMapSize || 2048;
+        light.shadow.mapSize.height = options.shadowMapSize || 2048;
+      }
+    }
+    
+    if (options.name) {
+      light.name = options.name;
+      this.objects[options.name] = light;
+    }
+    
+    this.addToScene(light);
+    return light;
+  }
+
+  /**
+   * Get an object by name
+   * @param {string} name - The name of the object
+   * @returns {THREE.Object3D|null} The object or null if not found
+   */
+  getObject = (name) => {
+    return this.objects[name] || this.scene.getObjectByName(name) || null;
+  }
+
+  /**
+   * Set camera position
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {number} z - Z position
+   */
+  setCameraPosition = (x, y, z) => {
+    this.camera.position.set(x, y, z);
+  }
+
+  /**
+   * Make camera look at a position or object
+   * @param {THREE.Vector3|THREE.Object3D|Object} target - Target to look at
+   */
+  setCameraTarget = (target) => {
+    if (target instanceof THREE.Object3D) {
+      this.camera.lookAt(target.position);
+    } else if (target instanceof THREE.Vector3) {
+      this.camera.lookAt(target);
+    } else if (target.x !== undefined && target.y !== undefined && target.z !== undefined) {
+      this.camera.lookAt(new THREE.Vector3(target.x, target.y, target.z));
+    }
   }
 }
