@@ -39,7 +39,7 @@
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
@@ -148,15 +148,16 @@
         const hue = (x + gridSize) / (gridSize * 2);
         const saturation = (z + gridSize) / (gridSize * 2);
         const color = new THREE.Color().setHSL(hue, saturation * 0.7 + 0.3, 0.5);
-        
+
         const material = new THREE.MeshStandardMaterial({
           color: color,
           metalness: 0.3,
           roughness: 0.6
         });
-        
+
         const cube = new THREE.Mesh(cubeGeo, material);
         cube.position.set(x * spacing, 0.5, z * spacing);
+        cube.userData.originalY = 0.5; // Store original Y position
         cube.castShadow = true;
         cube.receiveShadow = true;
         scene.add(cube);
@@ -175,6 +176,7 @@
     });
     const centralCube = new THREE.Mesh(centralCubeGeo, centralMat);
     centralCube.position.set(0, 2, 0);
+    centralCube.userData.originalY = 2; // Store original Y position
     centralCube.castShadow = true;
     centralCube.receiveShadow = true;
     scene.add(centralCube);
@@ -190,6 +192,7 @@
       });
       const sphere = new THREE.Mesh(sphereGeo, sphereMat);
       sphere.position.set(i * 4, 1, i * 2);
+      sphere.userData.originalY = 1; // Store original Y position
       sphere.castShadow = true;
       sphere.receiveShadow = true;
       scene.add(sphere);
@@ -229,18 +232,18 @@
     // ========================================
 
     function updateCameraInfo() {
-      document.getElementById('camera-name').textContent = 
+      document.getElementById('camera-name').textContent =
         cameraType === 'perspective' ? 'Perspective (Natural)' : 'Orthographic (Isometric)';
-      
+
       if (cameraType === 'perspective') {
-        document.getElementById('fov-value').textContent = 
+        document.getElementById('fov-value').textContent =
           Math.round(camera.fov) + '°';
       } else {
         document.getElementById('fov-value').textContent = 'N/A (Ortho)';
       }
-      
+
       const pos = camera.position;
-      document.getElementById('camera-position').textContent = 
+      document.getElementById('camera-position').textContent =
         `${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
     }
 
@@ -296,7 +299,7 @@
     const moveSpeed = 0.5;
 
     window.addEventListener('keydown', (event) => {
-      switch(event.key) {
+      switch (event.key) {
         case '1':
           switchToPerspective();
           break;
@@ -349,10 +352,10 @@
       // Rotate objects slowly
       objects.forEach((obj, index) => {
         obj.rotation.y = elapsedTime * 0.3 + index * 0.1;
-        
-        // Add subtle floating animation to some objects
-        if (index % 2 === 0) {
-          obj.position.y = obj.position.y + Math.sin(elapsedTime * 2 + index) * 0.005;
+
+        // Add subtle floating animation to some objects (oscillate around original Y)
+        if (index % 2 === 0 && obj.userData.originalY !== undefined) {
+          obj.position.y = obj.userData.originalY + Math.sin(elapsedTime * 2 + index) * 0.2;
         }
       });
 
