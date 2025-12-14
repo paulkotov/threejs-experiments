@@ -1,3 +1,7 @@
+/* ==========================================
+   Day 1: Base Styles for Three.js Scene
+   ========================================== */
+
 * {
   margin: 0;
   padding: 0;
@@ -5,127 +9,82 @@
 }
 
 body {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #000;
-  cursor: grab;
-}
-
-body:active {
-  cursor: grabbing;
+  background-color: #0a0a0f;
 }
 
 canvas {
   display: block;
-  outline: none;
   width: 100%;
   height: 100%;
 }
 
-.stats {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 100 !important;
-}
-
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 18px;
-  z-index: 1000;
-}
-
-.loading-screen.hidden {
-  display: none;
-}
-
-.ui-overlay {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  color: white;
-  font-size: 14px;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.ui-overlay.interactive {
-  pointer-events: auto;
-}
-
-.control-panel {
+/* Info Panel Styles */
+.info-panel {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 15px;
-  border-radius: 5px;
-  color: white;
-  font-size: 12px;
-  min-width: 200px;
-  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  max-width: 400px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.control-panel h3 {
+.info-panel h1 {
+  font-size: 24px;
+  color: #1a1a2e;
   margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.info-panel p {
   font-size: 14px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
+  color: #333;
+  margin: 6px 0;
+  line-height: 1.6;
 }
 
-.control-panel .control-group {
-  margin-bottom: 10px;
+.info-panel strong {
+  color: #0066cc;
+  font-weight: 600;
 }
 
-.control-panel label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.control-panel input[type="range"] {
-  width: 100%;
-  margin-bottom: 5px;
-}
-
-.control-panel input[type="checkbox"] {
-  margin-right: 5px;
-}
-
-.control-panel button {
-  background: #333;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  margin-right: 5px;
-  margin-bottom: 5px;
-}
-
-.control-panel button:hover {
-  background: #555;
-}
-
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .control-panel {
-    position: relative;
-    margin: 10px;
-    width: calc(100% - 20px);
+  .info-panel {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    padding: 15px 18px;
   }
 
-  .ui-overlay {
-    top: 10px;
-    right: 10px;
+  .info-panel h1 {
+    font-size: 20px;
+  }
+
+  .info-panel p {
     font-size: 12px;
   }
+}
+
+/* Loading Animation (optional for future use) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.info-panel {
+  animation: fadeIn 0.6s ease-out;
 }
