@@ -185,6 +185,7 @@
     // Fragment Shader - Runs for each pixel
     const fragmentShader = `
       uniform float uTime;
+      uniform float uWaveHeight;
       
       varying vec3 vPosition;
       varying float vElevation;
@@ -196,8 +197,10 @@
         vec3 midColor = vec3(0.2, 0.5, 0.8);      // Blue (mid)
         vec3 peakColor = vec3(0.9, 0.9, 1.0);     // White (peak)
         
-        // Normalize elevation (-waveHeight to +waveHeight)
-        float normalizedHeight = (vElevation + 3.0) / 6.0;
+        // Dynamically normalize elevation based on current wave height
+        // Wave range: -(uWaveHeight * 2.5) to +(uWaveHeight * 2.5)
+        float maxElevation = uWaveHeight * 2.5;
+        float normalizedHeight = (vElevation + maxElevation) / (maxElevation * 2.0);
         normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
         
         // Mix colors based on height
