@@ -14,6 +14,7 @@
     <h1>🎨 Day 2: Shapes & Materials</h1>
     <p><strong>Concept:</strong> Exploring Geometries & Material Types</p>
     <p><strong>Skills:</strong> Built-in Geometries · Material Properties · Lighting</p>
+    <p><strong>Layout:</strong> Front (purple spheres) = Materials · Back (colorful) = Geometries</p>
     <div class="controls-info">
       <p><strong>🖱️ Controls:</strong></p>
       <ul>
@@ -185,19 +186,21 @@
     shapes.push({ mesh: torusKnot, name: 'TorusKnot' });
 
     // ========================================
-    // MATERIAL COMPARISON - Second Row
+    // MATERIAL COMPARISON - Front Row
     // Same shape (sphere), different materials
+    // Positioned closer to camera (z=3) to be clearly visible
     // ========================================
 
     const matShapes = [];
     let matXPos = -5;
-    const matYPos = -2.5;
+    const matYPos = 0; // Same height as main shapes
+    const matZPos = 3; // Closer to camera
 
     // MeshBasicMaterial - No lighting needed, always visible
     const basicGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const basicMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
     const basicSphere = new THREE.Mesh(basicGeo, basicMat);
-    basicSphere.position.set(matXPos, matYPos, 0);
+    basicSphere.position.set(matXPos, matYPos, matZPos);
     scene.add(basicSphere);
     matShapes.push({ mesh: basicSphere, name: 'Basic' });
     matXPos += 2.5;
@@ -206,7 +209,7 @@
     const lambertGeo = new THREE.SphereGeometry(0.5, 32, 32);
     const lambertMat = new THREE.MeshLambertMaterial({ color: 0xff00ff });
     const lambertSphere = new THREE.Mesh(lambertGeo, lambertMat);
-    lambertSphere.position.set(matXPos, matYPos, 0);
+    lambertSphere.position.set(matXPos, matYPos, matZPos);
     lambertSphere.castShadow = true;
     lambertSphere.receiveShadow = true;
     scene.add(lambertSphere);
@@ -220,7 +223,7 @@
       shininess: 100
     });
     const phongSphere = new THREE.Mesh(phongGeo, phongMat);
-    phongSphere.position.set(matXPos, matYPos, 0);
+    phongSphere.position.set(matXPos, matYPos, matZPos);
     phongSphere.castShadow = true;
     phongSphere.receiveShadow = true;
     scene.add(phongSphere);
@@ -235,7 +238,7 @@
       roughness: 0.2
     });
     const standardSphere = new THREE.Mesh(standardGeo, standardMat);
-    standardSphere.position.set(matXPos, matYPos, 0);
+    standardSphere.position.set(matXPos, matYPos, matZPos);
     standardSphere.castShadow = true;
     standardSphere.receiveShadow = true;
     scene.add(standardSphere);
@@ -329,12 +332,12 @@
 
     console.log('🎨 Day 2: Shapes & Materials Gallery!');
     console.log('');
-    console.log('📦 TOP ROW - Geometry Types:');
+    console.log('📦 BACK ROW - Geometry Types:');
     shapes.forEach(shape => {
       console.log(`  ✓ ${shape.name}Geometry`);
     });
     console.log('');
-    console.log('🎭 MIDDLE ROW - Material Types (same shape):');
+    console.log('🎭 FRONT ROW (Purple Spheres) - Material Types Comparison:');
     matShapes.forEach(mat => {
       console.log(`  ✓ Mesh${mat.name}Material`);
     });
