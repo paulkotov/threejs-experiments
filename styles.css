@@ -1,5 +1,5 @@
 /* ==========================================
-   Day 5: Textures & Advanced Materials Styles
+   Day 6: Animation & Transformations Styles
    ========================================== */
 
 * {
@@ -11,7 +11,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #1a1a2e;
+  background-color: #000510;
 }
 
 canvas {
@@ -20,91 +20,92 @@ canvas {
   height: 100%;
 }
 
-/* Info Panel Styles */
+/* Info Panel Styles - Cosmic Theme */
 .info-panel {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: linear-gradient(135deg, rgba(40, 30, 60, 0.95), rgba(30, 20, 50, 0.95));
+  background: linear-gradient(135deg, rgba(10, 10, 30, 0.95), rgba(20, 10, 40, 0.95));
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(147, 51, 234, 0.4);
+  box-shadow: 0 8px 32px rgba(100, 50, 200, 0.5), 0 0 60px rgba(100, 50, 200, 0.2);
   z-index: 100;
   max-width: 450px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(147, 51, 234, 0.4);
-  color: #e0d0ff;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(150, 100, 255, 0.4);
+  color: #e8e0ff;
 }
 
 .info-panel h1 {
   font-size: 24px;
-  color: #c4b5fd;
+  color: #d4c5ff;
   margin-bottom: 10px;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(196, 181, 253, 0.5);
+  text-shadow: 0 0 15px rgba(212, 197, 255, 0.6);
 }
 
 .info-panel p {
   font-size: 14px;
-  color: #d0c0e8;
+  color: #d0d0e8;
   margin: 6px 0;
   line-height: 1.6;
 }
 
 .info-panel strong {
-  color: #a78bfa;
+  color: #b8a4ff;
   font-weight: 600;
 }
 
-/* Texture Info Section */
-.texture-info {
+/* Animation Info Section */
+.animation-info {
   margin: 12px 0;
   padding: 12px;
-  background: rgba(147, 51, 234, 0.15);
+  background: rgba(100, 50, 200, 0.2);
   border-radius: 8px;
-  border-left: 3px solid #a78bfa;
+  border-left: 3px solid #b8a4ff;
 }
 
-.texture-info p {
+.animation-info p {
   margin-bottom: 8px;
   font-size: 13px;
-  color: #c4b5fd;
+  color: #d4c5ff;
   font-weight: 600;
 }
 
-.texture-info ul {
+.animation-info ul {
   list-style: none;
   padding-left: 0;
   margin: 0;
 }
 
-.texture-info li {
+.animation-info li {
   font-size: 12px;
-  color: #d0c0e8;
+  color: #d8d0f0;
   margin: 5px 0;
-  padding-left: 20px;
+  padding-left: 24px;
   position: relative;
 }
 
-.texture-info li::before {
+.animation-info li::before {
   content: '▸';
   position: absolute;
   left: 0;
-  color: #a78bfa;
+  color: #b8a4ff;
   font-weight: bold;
+  font-size: 14px;
 }
 
 /* Controls Info Section */
 .controls-info {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(147, 51, 234, 0.3);
+  border-top: 1px solid rgba(150, 100, 255, 0.3);
 }
 
 .controls-info p {
   margin-bottom: 6px;
   font-size: 13px;
-  color: #c0b0d8;
+  color: #c8c0e0;
 }
 
 .controls-info ul {
@@ -116,7 +117,7 @@ canvas {
 
 .controls-info li {
   font-size: 12px;
-  color: #b0a0cc;
+  color: #b8b0d0;
   margin: 4px 0;
   padding-left: 16px;
   position: relative;
@@ -126,22 +127,30 @@ canvas {
   content: '▸';
   position: absolute;
   left: 0;
-  color: #a78bfa;
+  color: #b8a4ff;
   font-weight: bold;
+}
+
+/* Speed display */
+#speed-display {
+  color: #ffcc66;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 8px rgba(255, 204, 102, 0.6);
 }
 
 /* Keyboard key styling */
 kbd {
   display: inline-block;
   padding: 2px 6px;
-  background: linear-gradient(180deg, #5b4a7a, #4a3a6a);
-  border: 1px solid #7c6a9c;
+  background: linear-gradient(180deg, #4a3a6a, #3a2a5a);
+  border: 1px solid #6a5a8a;
   border-radius: 4px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4), 0 0 10px rgba(150, 100, 255, 0.3);
   font-family: 'Courier New', monospace;
   font-size: 11px;
   font-weight: bold;
-  color: #c4b5fd;
+  color: #d4c5ff;
   min-width: 20px;
   text-align: center;
 }
@@ -166,11 +175,8 @@ kbd {
     font-size: 12px;
   }
 
-  .controls-info li {
-    font-size: 11px;
-  }
-
-  .texture-info li {
+  .controls-info li,
+  .animation-info li {
     font-size: 11px;
   }
 
@@ -197,40 +203,40 @@ kbd {
   animation: fadeIn 0.6s ease-out;
 }
 
-/* Subtle glow animation for the panel */
-@keyframes subtleGlow {
+/* Cosmic glow animation */
+@keyframes cosmicGlow {
 
   0%,
   100% {
-    box-shadow: 0 8px 32px rgba(147, 51, 234, 0.4);
-    border-color: rgba(147, 51, 234, 0.4);
+    box-shadow: 0 8px 32px rgba(100, 50, 200, 0.5), 0 0 60px rgba(100, 50, 200, 0.2);
+    border-color: rgba(150, 100, 255, 0.4);
   }
 
   50% {
-    box-shadow: 0 8px 32px rgba(147, 51, 234, 0.6);
-    border-color: rgba(147, 51, 234, 0.7);
+    box-shadow: 0 8px 32px rgba(100, 50, 200, 0.7), 0 0 80px rgba(100, 50, 200, 0.4);
+    border-color: rgba(150, 100, 255, 0.7);
   }
 }
 
 .info-panel:hover {
-  animation: subtleGlow 2s ease-in-out infinite;
+  animation: cosmicGlow 2s ease-in-out infinite;
 }
 
-/* Scrollbar styling for mobile */
+/* Scrollbar styling */
 .info-panel::-webkit-scrollbar {
   width: 6px;
 }
 
 .info-panel::-webkit-scrollbar-track {
-  background: rgba(40, 30, 60, 0.5);
+  background: rgba(10, 10, 30, 0.5);
   border-radius: 3px;
 }
 
 .info-panel::-webkit-scrollbar-thumb {
-  background: rgba(147, 51, 234, 0.6);
+  background: rgba(150, 100, 255, 0.6);
   border-radius: 3px;
 }
 
 .info-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(147, 51, 234, 0.8);
+  background: rgba(150, 100, 255, 0.9);
 }
