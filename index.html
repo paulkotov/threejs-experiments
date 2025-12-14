@@ -40,7 +40,7 @@
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
@@ -102,7 +102,7 @@
         for (let x = 0; x < canvas.width; x += brickWidth) {
           // Offset every other row
           const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
-          
+
           // Brick color with variation
           const variation = Math.random() * 20 - 10;
           ctx.fillStyle = `rgb(${180 + variation}, ${80 + variation}, ${60 + variation})`;
@@ -139,7 +139,7 @@
       for (let y = 0; y < canvas.height; y += brickHeight) {
         for (let x = 0; x < canvas.width; x += brickWidth) {
           const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
-          
+
           // Create gradient for brick edges (simulates depth)
           const gradient = ctx.createLinearGradient(
             (x + offsetX) % canvas.width,
@@ -150,7 +150,7 @@
           gradient.addColorStop(0, 'rgb(100, 100, 255)');
           gradient.addColorStop(0.5, 'rgb(128, 128, 255)');
           gradient.addColorStop(1, 'rgb(150, 150, 255)');
-          
+
           ctx.fillStyle = gradient;
           ctx.fillRect(
             (x + offsetX) % canvas.width,
@@ -184,7 +184,7 @@
       for (let y = 0; y < canvas.height; y += brickHeight) {
         for (let x = 0; x < canvas.width; x += brickWidth) {
           const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
-          
+
           // Bricks - smoother (darker)
           const roughness = Math.random() * 50 + 100; // 100-150
           ctx.fillStyle = `rgb(${roughness}, ${roughness}, ${roughness})`;
@@ -248,10 +248,17 @@
       for (let y = 0; y < canvas.height; y += brickHeight) {
         for (let x = 0; x < canvas.width; x += brickWidth) {
           const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+
+          // Draw dark lines for gaps (vertical mortar line)
+          const vertLineX = (x + offsetX + brickWidth - 8) % canvas.width;
+          ctx.fillRect(vertLineX, y, 8, brickHeight);
           
-          // Draw dark lines for gaps
-          ctx.fillRect((x + offsetX) % canvas.width + brickWidth - 8, y, 8, brickHeight);
-          ctx.fillRect((x + offsetX) % canvas.width, y + brickHeight - 8, brickWidth, 8);
+          // Draw dark lines for gaps (horizontal mortar line)
+          const horizLineX = (x + offsetX) % canvas.width;
+          const horizLineY = y + brickHeight - 8;
+          if (horizLineY < canvas.height) {
+            ctx.fillRect(horizLineX, horizLineY, Math.min(brickWidth, canvas.width - horizLineX), 8);
+          }
         }
       }
 
@@ -403,7 +410,7 @@
       metalness: 0
     });
     checkerMap.repeat.set(10, 10);
-    
+
     const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;
@@ -417,8 +424,8 @@
 
     function setDisplayMode(mode) {
       displayMode = mode;
-      
-      switch(mode) {
+
+      switch (mode) {
         case 'color':
           sphereMaterial.map = colorMap;
           sphereMaterial.normalMap = null;
@@ -430,7 +437,7 @@
           sphereMaterial.wireframe = false;
           console.log('📷 Mode: Color Map Only');
           break;
-          
+
         case 'normal':
           sphereMaterial.map = null;
           sphereMaterial.color.setHex(0xcccccc);
@@ -444,7 +451,7 @@
           sphereMaterial.wireframe = false;
           console.log('📷 Mode: Normal Map Effect');
           break;
-          
+
         case 'roughness':
           sphereMaterial.map = null;
           sphereMaterial.color.setHex(0x888888);
@@ -457,7 +464,7 @@
           sphereMaterial.wireframe = false;
           console.log('📷 Mode: Roughness Variation');
           break;
-          
+
         case 'all':
           sphereMaterial.map = colorMap;
           sphereMaterial.normalMap = normalMap;
@@ -470,13 +477,13 @@
           sphereMaterial.wireframe = false;
           console.log('📷 Mode: All Maps (Full PBR)');
           break;
-          
+
         case 'wireframe':
           sphereMaterial.wireframe = true;
           console.log('📷 Mode: Wireframe UV View');
           break;
       }
-      
+
       sphereMaterial.needsUpdate = true;
     }
 
@@ -485,7 +492,7 @@
     // ========================================
 
     window.addEventListener('keydown', (event) => {
-      switch(event.key) {
+      switch (event.key) {
         case '1':
           setDisplayMode('color');
           break;
@@ -534,7 +541,7 @@
       // Animate point lights
       pointLight1.position.x = Math.cos(elapsedTime * 0.5) * 8;
       pointLight1.position.z = Math.sin(elapsedTime * 0.5) * 8;
-      
+
       pointLight2.position.x = Math.cos(elapsedTime * 0.5 + Math.PI) * 8;
       pointLight2.position.z = Math.sin(elapsedTime * 0.5 + Math.PI) * 8;
 
