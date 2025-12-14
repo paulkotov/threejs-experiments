@@ -346,9 +346,11 @@
     function animate() {
       requestAnimationFrame(animate);
 
+      // Always call getDelta() to prevent time accumulation
+      const delta = clock.getDelta() * timeSpeed;
+      const elapsed = clock.getElapsedTime() * timeSpeed;
+
       if (!isPaused) {
-        const delta = clock.getDelta() * timeSpeed;
-        const elapsed = clock.getElapsedTime() * timeSpeed;
 
         // ===== SUN ANIMATIONS =====
         // Sun rotates on its axis
