@@ -252,12 +252,12 @@
           // Draw dark lines for gaps (vertical mortar line)
           const vertLineX = (x + offsetX + brickWidth - 8) % canvas.width;
           ctx.fillRect(vertLineX, y, 8, brickHeight);
-          
+
           // Draw dark lines for gaps (horizontal mortar line)
           const horizLineX = (x + offsetX) % canvas.width;
           const horizLineY = y + brickHeight - 8;
           if (horizLineY < canvas.height) {
-            ctx.fillRect(horizLineX, horizLineY, Math.min(brickWidth, canvas.width - horizLineX), 8);
+            ctx.fillRect(horizLineX, horizLineY, Math.min(brickWidth - 8, canvas.width - horizLineX), 8);
           }
         }
       }
