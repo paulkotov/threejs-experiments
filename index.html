@@ -41,7 +41,7 @@
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
@@ -273,8 +273,8 @@
     // ========================================
 
     function updateUI() {
-      document.getElementById('wave-speed').textContent = (waveSpeed * material.uniforms.uWaveSpeed.value).toFixed(1) + 'x';
-      document.getElementById('wave-height').textContent = (waveHeight * material.uniforms.uWaveHeight.value / 3.0).toFixed(1) + 'x';
+      document.getElementById('wave-speed').textContent = waveSpeed.toFixed(1) + 'x';
+      document.getElementById('wave-height').textContent = waveHeight.toFixed(1) + 'x';
     }
 
     // ========================================
@@ -282,7 +282,7 @@
     // ========================================
 
     window.addEventListener('keydown', (event) => {
-      switch(event.key) {
+      switch (event.key) {
         case ' ':
           isPaused = !isPaused;
           console.log(isPaused ? '⏸️ Waves paused' : '▶️ Waves resumed');
@@ -296,12 +296,14 @@
         case '+':
         case '=':
           waveSpeed = Math.min(waveSpeed + 0.2, 5);
+          material.uniforms.uWaveSpeed.value = waveSpeed;
           updateUI();
           console.log(`⏩ Wave speed: ${waveSpeed.toFixed(1)}x`);
           break;
         case '-':
         case '_':
           waveSpeed = Math.max(waveSpeed - 0.2, 0.1);
+          material.uniforms.uWaveSpeed.value = waveSpeed;
           updateUI();
           console.log(`⏪ Wave speed: ${waveSpeed.toFixed(1)}x`);
           break;
@@ -322,7 +324,6 @@
           isPaused = false;
           waveSpeed = 1.0;
           waveHeight = 1.0;
-          material.uniforms.uWaveSpeed.value = 1.0;
           material.uniforms.uWaveHeight.value = 3.0;
           material.wireframe = false;
           sphereMat.wireframe = false;
@@ -344,7 +345,6 @@
       if (!isPaused) {
         // Update shader uniform for time-based animation
         material.uniforms.uTime.value += delta * waveSpeed;
-        material.uniforms.uWaveSpeed.value = waveSpeed;
       }
 
       // Rotate reference sphere
