@@ -256,6 +256,8 @@
       camera = perspectiveCamera;
       camera.position.copy(oldPosition);
       controls.object = camera;
+      controls.target.set(0, 0, 0); // Reset orbit target to scene center
+      controls.update(); // Apply changes immediately
       cameraType = 'perspective';
       updateCameraInfo();
       console.log('📸 Switched to Perspective Camera - Objects farther away appear smaller');
@@ -266,6 +268,8 @@
       camera = orthographicCamera;
       camera.position.copy(oldPosition);
       controls.object = camera;
+      controls.target.set(0, 0, 0); // Reset orbit target to scene center
+      controls.update(); // Apply changes immediately
       cameraType = 'orthographic';
       updateCameraInfo();
       console.log('📸 Switched to Orthographic Camera - No perspective distortion (like CAD)');
