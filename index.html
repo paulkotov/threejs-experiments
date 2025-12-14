@@ -4,61 +4,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day 7: Custom Geometry & Shader Basics</title>
+  <title>Day 8: Particle Systems - Creating Magic</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <!-- Day 7 Info Panel -->
+  <!-- Day 8 Info Panel -->
   <div class="info-panel">
-    <h1>🏔️ Day 7: Custom Geometry & Shaders</h1>
-    <p><strong>Concept:</strong> BufferGeometry & GLSL Shader Programming</p>
-    <p><strong>Skills:</strong> Vertices · Attributes · Shaders · Uniforms</p>
-    <div class="shader-info">
-      <p><strong>🎨 Shader Features:</strong></p>
+    <h1>✨ Day 8: Particle Systems</h1>
+    <p><strong>Concept:</strong> Rendering Thousands of Particles Efficiently</p>
+    <p><strong>Skills:</strong> THREE.Points · BufferGeometry · Performance</p>
+    <div class="particle-info">
+      <p><strong>🌌 Galaxy Stats:</strong></p>
       <ul>
-        <li>✓ Custom vertex positions (100×100 grid)</li>
-        <li>✓ Animated wave displacement</li>
-        <li>✓ Height-based coloring</li>
-        <li>✓ Custom lighting in fragment shader</li>
-        <li>✓ Time-based animation uniforms</li>
+        <li id="particle-count">Particles: 50,000</li>
+        <li id="fps-display">FPS: 60</li>
+        <li>Spiral arms: 3</li>
+        <li>Particle size: 0.01 - 0.05 units</li>
       </ul>
     </div>
     <div class="controls-info">
       <p><strong>⌨️ Keyboard Controls:</strong></p>
       <ul>
-        <li><kbd>Space</kbd> - Pause/Resume waves</li>
-        <li><kbd>W</kbd> - Toggle wireframe</li>
-        <li><kbd>+</kbd> / <kbd>-</kbd> - Wave speed</li>
-        <li><kbd>↑</kbd> / <kbd>↓</kbd> - Wave height</li>
-        <li><kbd>R</kbd> - Reset settings</li>
+        <li><kbd>Space</kbd> - Pause/Resume rotation</li>
+        <li><kbd>+</kbd> / <kbd>-</kbd> - Rotation speed</li>
+        <li><kbd>1</kbd> - 10,000 particles (fast)</li>
+        <li><kbd>2</kbd> - 50,000 particles (default)</li>
+        <li><kbd>3</kbd> - 100,000 particles (intensive)</li>
+        <li><kbd>C</kbd> - Cycle color scheme</li>
+        <li><kbd>R</kbd> - Regenerate galaxy</li>
       </ul>
       <p><strong>🖱️ Mouse:</strong> Drag to rotate · Scroll to zoom</p>
-      <p><strong>⚡ Wave Speed:</strong> <span id="wave-speed">1.0x</span></p>
-      <p><strong>📊 Wave Height:</strong> <span id="wave-height">1.0x</span></p>
     </div>
   </div>
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+  
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
-  <!-- Day 7 Script -->
+  <!-- Day 8 Script -->
   <script>
     // ========================================
-    // DAY 7: CUSTOM GEOMETRY & SHADERS
-    // Learning: BufferGeometry, GLSL, Vertex/Fragment Shaders
+    // DAY 8: PARTICLE SYSTEMS
+    // Learning: THREE.Points, Performance, Large-Scale Rendering
     // ========================================
 
-    console.log('🏔️ Day 7: Custom Geometry & Shader Basics');
-    console.log('Creating custom wave terrain...');
+    console.log('✨ Day 8: Particle Systems - Creating Magic');
+    console.log('Generating galaxy...');
 
     // SCENE SETUP
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a1e);
-    scene.fog = new THREE.Fog(0x0a0a1e, 50, 200);
+    scene.background = new THREE.Color(0x000000);
 
     // CAMERA
     const camera = new THREE.PerspectiveCamera(
@@ -67,7 +65,7 @@
       0.1,
       1000
     );
-    camera.position.set(0, 30, 50);
+    camera.position.set(0, 50, 100);
 
     // RENDERER
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -79,205 +77,145 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 10;
-    controls.maxDistance = 150;
-    controls.maxPolarAngle = Math.PI / 2.1; // Prevent going below terrain
-
-    // ========================================
-    // CUSTOM BUFFER GEOMETRY
-    // Creating a terrain grid from scratch
-    // ========================================
-
-    const gridSize = 100;  // 100x100 grid
-    const gridSpacing = 1;
-    const totalVertices = gridSize * gridSize;
-
-    // Create empty BufferGeometry
-    const geometry = new THREE.BufferGeometry();
-
-    // Arrays to hold our vertex data
-    const positions = [];  // x, y, z coordinates
-    const indices = [];    // Triangle indices
-    const uvs = [];       // UV coordinates for texturing
-    const colors = [];    // Vertex colors
-
-    // Generate vertices
-    for (let z = 0; z < gridSize; z++) {
-      for (let x = 0; x < gridSize; x++) {
-        // Position
-        const posX = (x - gridSize / 2) * gridSpacing;
-        const posY = 0; // Will be animated by shader
-        const posZ = (z - gridSize / 2) * gridSpacing;
-        positions.push(posX, posY, posZ);
-
-        // UV coordinates (0-1 range)
-        const u = x / (gridSize - 1);
-        const v = z / (gridSize - 1);
-        uvs.push(u, v);
-
-        // Initial vertex color (will be modified by shader)
-        colors.push(1, 1, 1);
-      }
-    }
-
-    // Generate indices (two triangles per quad)
-    for (let z = 0; z < gridSize - 1; z++) {
-      for (let x = 0; x < gridSize - 1; x++) {
-        const topLeft = z * gridSize + x;
-        const topRight = topLeft + 1;
-        const bottomLeft = (z + 1) * gridSize + x;
-        const bottomRight = bottomLeft + 1;
-
-        // First triangle
-        indices.push(topLeft, bottomLeft, topRight);
-        // Second triangle
-        indices.push(topRight, bottomLeft, bottomRight);
-      }
-    }
-
-    // Set attributes on geometry
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geometry.setIndex(indices);
-
-    // Compute normals for lighting
-    geometry.computeVertexNormals();
-
-    console.log(`✓ Created custom geometry: ${totalVertices} vertices, ${indices.length / 3} triangles`);
-
-    // ========================================
-    // CUSTOM SHADER MATERIAL
-    // Writing GLSL shaders from scratch!
-    // ========================================
-
-    // Vertex Shader - Runs for each vertex
-    const vertexShader = `
-      uniform float uTime;
-      uniform float uWaveSpeed;
-      uniform float uWaveHeight;
-      
-      varying vec3 vPosition;
-      varying float vElevation;
-      varying vec2 vUv;
-      
-      void main() {
-        vec3 pos = position;
-        
-        // Create waves using sine functions
-        float wave1 = sin(pos.x * 0.3 + uTime * uWaveSpeed) * uWaveHeight;
-        float wave2 = sin(pos.z * 0.4 + uTime * uWaveSpeed * 0.7) * uWaveHeight;
-        float wave3 = sin((pos.x + pos.z) * 0.2 + uTime * uWaveSpeed * 1.3) * uWaveHeight * 0.5;
-        
-        // Combine waves
-        pos.y += wave1 + wave2 + wave3;
-        
-        // Pass data to fragment shader
-        vPosition = pos;
-        vElevation = pos.y;
-        vUv = uv;
-        
-        // Final position
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-      }
-    `;
-
-    // Fragment Shader - Runs for each pixel
-    const fragmentShader = `
-      uniform float uTime;
-      uniform float uWaveHeight;
-      
-      varying vec3 vPosition;
-      varying float vElevation;
-      varying vec2 vUv;
-      
-      void main() {
-        // Color based on height
-        vec3 deepColor = vec3(0.1, 0.05, 0.3);   // Dark purple (low)
-        vec3 midColor = vec3(0.2, 0.5, 0.8);      // Blue (mid)
-        vec3 peakColor = vec3(0.9, 0.9, 1.0);     // White (peak)
-        
-        // Dynamically normalize elevation based on current wave height
-        // Wave range: -(uWaveHeight * 2.5) to +(uWaveHeight * 2.5)
-        float maxElevation = uWaveHeight * 2.5;
-        float normalizedHeight = (vElevation + maxElevation) / (maxElevation * 2.0);
-        normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
-        
-        // Mix colors based on height
-        vec3 color;
-        if (normalizedHeight < 0.5) {
-          color = mix(deepColor, midColor, normalizedHeight * 2.0);
-        } else {
-          color = mix(midColor, peakColor, (normalizedHeight - 0.5) * 2.0);
-        }
-        
-        // Add subtle grid pattern
-        float gridX = abs(fract(vUv.x * 50.0) - 0.5);
-        float gridZ = abs(fract(vUv.y * 50.0) - 0.5);
-        float grid = step(0.48, min(gridX, gridZ)) * 0.1;
-        
-        color += grid;
-        
-        gl_FragColor = vec4(color, 1.0);
-      }
-    `;
-
-    // Create shader material
-    const material = new THREE.ShaderMaterial({
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
-      uniforms: {
-        uTime: { value: 0.0 },
-        uWaveSpeed: { value: 1.0 },
-        uWaveHeight: { value: 3.0 }
-      },
-      wireframe: false,
-      side: THREE.DoubleSide
-    });
-
-    // Create mesh
-    const terrain = new THREE.Mesh(geometry, material);
-    scene.add(terrain);
-
-    // ========================================
-    // LIGHTING (for reference spheres)
-    // ========================================
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.position.set(10, 20, 10);
-    scene.add(directionalLight);
-
-    // Reference sphere (shows BufferGeometry basics)
-    const sphereGeo = new THREE.SphereGeometry(3, 16, 16);
-    const sphereMat = new THREE.MeshStandardMaterial({
-      color: 0xff6b6b,
-      wireframe: false,
-      roughness: 0.5,
-      metalness: 0.5
-    });
-    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    sphere.position.set(30, 10, 0);
-    scene.add(sphere);
+    controls.minDistance = 20;
+    controls.maxDistance = 300;
 
     // ========================================
     // ANIMATION VARIABLES
     // ========================================
 
     let isPaused = false;
-    let waveSpeed = 1.0;
-    let waveHeight = 1.0;
+    let rotationSpeed = 0.1;
+    let particleCount = 50000;
+    let colorScheme = 0;
     const clock = new THREE.Clock();
+    let galaxy = null;
 
     // ========================================
-    // UI UPDATE FUNCTIONS
+    // PARTICLE GALAXY GENERATION
     // ========================================
+
+    function generateGalaxy(count) {
+      // Remove old galaxy if exists
+      if (galaxy) {
+        geometry.dispose();
+        material.dispose();
+        scene.remove(galaxy);
+      }
+
+      // Create BufferGeometry
+      const geometry = new THREE.BufferGeometry();
+
+      // Arrays for particle data
+      const positions = [];
+      const colors = [];
+      const sizes = [];
+
+      // Galaxy parameters
+      const branches = 3;
+      const spin = 1.5;
+      const radius = 50;
+
+      // Color schemes
+      const colorSchemes = [
+        // Scheme 0: Blue-Purple
+        { inner: new THREE.Color(0x4466ff), outer: new THREE.Color(0xff44ff) },
+        // Scheme 1: Red-Orange
+        { inner: new THREE.Color(0xff4444), outer: new THREE.Color(0xff8844) },
+        // Scheme 2: Green-Cyan
+        { inner: new THREE.Color(0x44ff88), outer: new THREE.Color(0x44ffff) }
+      ];
+
+      const currentScheme = colorSchemes[colorScheme % colorSchemes.length];
+
+      // Generate particles
+      for (let i = 0; i < count; i++) {
+        // POSITION
+        // Distance from center (0 to radius)
+        const r = Math.random() * radius;
+        
+        // Spiral angle
+        const branchAngle = (i % branches) / branches * Math.PI * 2;
+        const spinAngle = r * spin;
+        
+        // Add randomness
+        const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
+        const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
+        const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
+        
+        // Calculate position
+        const x = Math.cos(branchAngle + spinAngle) * r + randomX;
+        const y = randomY;
+        const z = Math.sin(branchAngle + spinAngle) * r + randomZ;
+        
+        positions.push(x, y, z);
+
+        // COLOR
+        // Mix colors based on distance from center
+        const mixedColor = currentScheme.inner.clone();
+        mixedColor.lerp(currentScheme.outer, r / radius);
+        
+        colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
+
+        // SIZE
+        // Smaller particles further from center
+        const size = Math.random() * 1.5 + 0.5;
+        sizes.push(size);
+      }
+
+      // Set attributes
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+      // Create material
+      const material = new THREE.PointsMaterial({
+        size: 0.05,
+        sizeAttenuation: true,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      // Create Points mesh
+      galaxy = new THREE.Points(geometry, material);
+      scene.add(galaxy);
+
+      console.log(`✓ Galaxy created: ${count.toLocaleString()} particles`);
+      updateUI();
+
+      // Store geometry and material for disposal
+      galaxy.userData.geometry = geometry;
+      galaxy.userData.material = material;
+    }
+
+    // Generate initial galaxy
+    generateGalaxy(particleCount);
+
+    // ========================================
+    // UI UPDATE
+    // ========================================
+
+    let lastTime = performance.now();
+    let frames = 0;
+    let fps = 60;
 
     function updateUI() {
-      document.getElementById('wave-speed').textContent = waveSpeed.toFixed(1) + 'x';
-      document.getElementById('wave-height').textContent = waveHeight.toFixed(1) + 'x';
+      document.getElementById('particle-count').textContent = 
+        `Particles: ${particleCount.toLocaleString()}`;
+    }
+
+    function updateFPS() {
+      frames++;
+      const currentTime = performance.now();
+      if (currentTime >= lastTime + 1000) {
+        fps = Math.round((frames * 1000) / (currentTime - lastTime));
+        document.getElementById('fps-display').textContent = `FPS: ${fps}`;
+        frames = 0;
+        lastTime = currentTime;
+      }
     }
 
     // ========================================
@@ -285,54 +223,47 @@
     // ========================================
 
     window.addEventListener('keydown', (event) => {
-      switch (event.key) {
+      switch(event.key) {
         case ' ':
           isPaused = !isPaused;
-          console.log(isPaused ? '⏸️ Waves paused' : '▶️ Waves resumed');
-          break;
-        case 'w':
-        case 'W':
-          material.wireframe = !material.wireframe;
-          sphereMat.wireframe = !sphereMat.wireframe;
-          console.log(`🔲 Wireframe: ${material.wireframe ? 'ON' : 'OFF'}`);
+          console.log(isPaused ? '⏸️ Rotation paused' : '▶️ Rotation resumed');
           break;
         case '+':
         case '=':
-          waveSpeed = Math.min(waveSpeed + 0.2, 5);
-          material.uniforms.uWaveSpeed.value = waveSpeed;
-          updateUI();
-          console.log(`⏩ Wave speed: ${waveSpeed.toFixed(1)}x`);
+          rotationSpeed = Math.min(rotationSpeed + 0.05, 2);
+          console.log(`⏩ Rotation speed: ${rotationSpeed.toFixed(2)}x`);
           break;
         case '-':
         case '_':
-          waveSpeed = Math.max(waveSpeed - 0.2, 0.1);
-          material.uniforms.uWaveSpeed.value = waveSpeed;
-          updateUI();
-          console.log(`⏪ Wave speed: ${waveSpeed.toFixed(1)}x`);
+          rotationSpeed = Math.max(rotationSpeed - 0.05, 0.05);
+          console.log(`⏪ Rotation speed: ${rotationSpeed.toFixed(2)}x`);
           break;
-        case 'ArrowUp':
-          waveHeight = Math.min(waveHeight + 0.2, 3);
-          material.uniforms.uWaveHeight.value = waveHeight * 3.0;
-          updateUI();
-          console.log(`📈 Wave height: ${waveHeight.toFixed(1)}x`);
+        case '1':
+          particleCount = 10000;
+          generateGalaxy(particleCount);
+          console.log('🚀 Fast mode: 10,000 particles');
           break;
-        case 'ArrowDown':
-          waveHeight = Math.max(waveHeight - 0.2, 0.2);
-          material.uniforms.uWaveHeight.value = waveHeight * 3.0;
-          updateUI();
-          console.log(`📉 Wave height: ${waveHeight.toFixed(1)}x`);
+        case '2':
+          particleCount = 50000;
+          generateGalaxy(particleCount);
+          console.log('⚡ Default mode: 50,000 particles');
+          break;
+        case '3':
+          particleCount = 100000;
+          generateGalaxy(particleCount);
+          console.log('💫 Intensive mode: 100,000 particles');
+          break;
+        case 'c':
+        case 'C':
+          colorScheme = (colorScheme + 1) % 3;
+          generateGalaxy(particleCount);
+          const schemes = ['Blue-Purple', 'Red-Orange', 'Green-Cyan'];
+          console.log(`🎨 Color scheme: ${schemes[colorScheme]}`);
           break;
         case 'r':
         case 'R':
-          isPaused = false;
-          waveSpeed = 1.0;
-          waveHeight = 1.0;
-          material.uniforms.uWaveSpeed.value = 1.0;
-          material.uniforms.uWaveHeight.value = 3.0;
-          material.wireframe = false;
-          sphereMat.wireframe = false;
-          updateUI();
-          console.log('🔄 Reset to defaults');
+          generateGalaxy(particleCount);
+          console.log('🔄 Galaxy regenerated');
           break;
       }
     });
@@ -346,13 +277,13 @@
 
       const delta = clock.getDelta();
 
-      if (!isPaused) {
-        // Update shader uniform for time-based animation
-        material.uniforms.uTime.value += delta * waveSpeed;
+      if (!isPaused && galaxy) {
+        // Rotate galaxy
+        galaxy.rotation.y += delta * rotationSpeed;
       }
 
-      // Rotate reference sphere
-      sphere.rotation.y += delta * 0.5;
+      // Update FPS counter
+      updateFPS();
 
       // Update controls
       controls.update();
@@ -380,29 +311,26 @@
 
     console.log('');
     console.log('📚 What you\'re learning:');
-    console.log('  ✓ BufferGeometry - Custom geometry creation');
-    console.log('  ✓ Vertices - Individual points in 3D space');
-    console.log('  ✓ Indices - Define triangles from vertices');
-    console.log('  ✓ Attributes - Data per vertex (position, uv, color)');
-    console.log('  ✓ GLSL - OpenGL Shading Language');
-    console.log('  ✓ Vertex Shader - Processes each vertex');
-    console.log('  ✓ Fragment Shader - Processes each pixel');
-    console.log('  ✓ Uniforms - Variables passed from JavaScript');
-    console.log('  ✓ Varyings - Data passed vertex → fragment');
+    console.log('  ✓ THREE.Points - Efficient particle rendering');
+    console.log('  ✓ PointsMaterial - Particle appearance');
+    console.log('  ✓ BufferGeometry for particles');
+    console.log('  ✓ Vertex colors on particles');
+    console.log('  ✓ Size attenuation - particles scale with distance');
+    console.log('  ✓ Additive blending - glowing effect');
+    console.log('  ✓ Procedural generation - spiral galaxy algorithm');
+    console.log('  ✓ Performance optimization - rendering 100K+ particles');
     console.log('');
     console.log('🎮 Try these:');
-    console.log('  W: Toggle wireframe to see the geometry structure');
-    console.log('  +/-: Change wave animation speed');
-    console.log('  ↑↓: Adjust wave amplitude');
-    console.log('  Space: Pause and observe');
+    console.log('  1-3: Change particle count and see FPS impact');
+    console.log('  C: Cycle through color schemes');
+    console.log('  R: Regenerate with different random seed');
+    console.log('  +/-: Adjust rotation speed');
     console.log('');
     console.log('💡 Notice:');
-    console.log('  - 100×100 grid = 10,000 vertices!');
-    console.log('  - Colors computed per-pixel in fragment shader');
-    console.log('  - Waves calculated in vertex shader (GPU accelerated)');
-
-    // Initial UI update
-    updateUI();
+    console.log('  - 50,000 particles rendering at 60 FPS!');
+    console.log('  - Each particle has position, color, and size');
+    console.log('  - Additive blending creates glow effect');
+    console.log('  - GPU handles all particles in parallel');
   </script>
 </body>
 
