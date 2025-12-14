@@ -27,7 +27,7 @@
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <!-- OrbitControls for interactive camera -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
@@ -218,7 +218,7 @@
 
     // MeshPhongMaterial - Shiny surface with specular highlights
     const phongGeo = new THREE.SphereGeometry(0.5, 32, 32);
-    const phongMat = new THREE.MeshPhongMaterial({ 
+    const phongMat = new THREE.MeshPhongMaterial({
       color: 0xff00ff,
       shininess: 100
     });
@@ -232,7 +232,7 @@
 
     // MeshStandardMaterial - Physically-based rendering (PBR)
     const standardGeo = new THREE.SphereGeometry(0.5, 32, 32);
-    const standardMat = new THREE.MeshStandardMaterial({ 
+    const standardMat = new THREE.MeshStandardMaterial({
       color: 0xff00ff,
       metalness: 0.7,
       roughness: 0.2
@@ -288,7 +288,7 @@
       shapes.forEach((shape, index) => {
         shape.mesh.rotation.x = elapsedTime * 0.3;
         shape.mesh.rotation.y = elapsedTime * 0.5;
-        
+
         // Add a floating animation
         shape.mesh.position.y = Math.sin(elapsedTime + index) * 0.2;
       });
