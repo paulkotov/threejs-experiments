@@ -1,5 +1,5 @@
 /* ==========================================
-   Day 1: Base Styles for Three.js Scene
+   Day 2: Shapes & Materials Styles
    ========================================== */
 
 * {
@@ -11,7 +11,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #0a0a0f;
+  background-color: #0f0f1e;
 }
 
 canvas {
@@ -25,12 +25,12 @@ canvas {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.95));
   padding: 20px 25px;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  max-width: 400px;
+  max-width: 420px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -54,6 +54,41 @@ canvas {
   font-weight: 600;
 }
 
+/* Controls Info Section */
+.controls-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.controls-info p {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #555;
+}
+
+.controls-info ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 6px;
+}
+
+.controls-info li {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0;
+  padding-left: 16px;
+  position: relative;
+}
+
+.controls-info li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #0066cc;
+  font-weight: bold;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .info-panel {
@@ -71,9 +106,13 @@ canvas {
   .info-panel p {
     font-size: 12px;
   }
+
+  .controls-info li {
+    font-size: 11px;
+  }
 }
 
-/* Loading Animation (optional for future use) */
+/* Fade-in Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -87,4 +126,18 @@ canvas {
 
 .info-panel {
   animation: fadeIn 0.6s ease-out;
+}
+
+/* Subtle pulse animation for the panel */
+@keyframes subtlePulse {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+  }
+}
+
+.info-panel:hover {
+  animation: subtlePulse 2s ease-in-out infinite;
 }

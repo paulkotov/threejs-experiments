@@ -4,146 +4,358 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day 1: Hello Three.js - Your First 3D Scene</title>
+  <title>Day 2: Shapes & Materials - Exploring Geometries</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <!-- Day 1 Info Panel -->
+  <!-- Day 2 Info Panel -->
   <div class="info-panel">
-    <h1>🎯 Day 1: Hello Three.js</h1>
-    <p><strong>Concept:</strong> Your First 3D Scene</p>
-    <p><strong>Skills:</strong> Scene · Camera · Renderer · Geometry · Material · Animation Loop</p>
+    <h1>🎨 Day 2: Shapes & Materials</h1>
+    <p><strong>Concept:</strong> Exploring Geometries & Material Types</p>
+    <p><strong>Skills:</strong> Built-in Geometries · Material Properties · Lighting</p>
+    <div class="controls-info">
+      <p><strong>🖱️ Controls:</strong></p>
+      <ul>
+        <li>Left click + drag to rotate</li>
+        <li>Right click + drag to pan</li>
+        <li>Scroll to zoom</li>
+      </ul>
+    </div>
   </div>
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- OrbitControls for interactive camera -->
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
-  <!-- Day 1 Script -->
+  <!-- Day 2 Script -->
   <script>
     // ========================================
-    // DAY 1: HELLO THREE.JS
-    // Learning: The Three.js Trinity - Scene, Camera, Renderer
+    // DAY 2: SHAPES & MATERIALS
+    // Learning: Built-in Geometries and Material Types
     // ========================================
 
-    // STEP 1: CREATE THE SCENE
-    // The scene is like a container that holds all your 3D objects
+    // SETUP: Scene, Camera, Renderer
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a2e); // Dark blue background
+    scene.background = new THREE.Color(0x0f0f1e);
 
-    // STEP 2: CREATE THE CAMERA
-    // The camera is your eye into the 3D world
-    // PerspectiveCamera(fov, aspect, near, far)
-    // - fov: Field of view in degrees (how wide the camera sees)
-    // - aspect: Width/height ratio (usually window dimensions)
-    // - near: Nearest render distance
-    // - far: Furthest render distance
     const camera = new THREE.PerspectiveCamera(
-      75,                                    // Field of view
-      window.innerWidth / window.innerHeight, // Aspect ratio
-      0.1,                                   // Near clipping plane
-      1000                                   // Far clipping plane
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
     );
-    
-    // Position the camera (x, y, z)
-    // Default position is (0, 0, 0) - we need to move it back to see objects
-    camera.position.z = 5;
+    camera.position.set(0, 3, 8);
+    camera.lookAt(0, 0, 0);
 
-    // STEP 3: CREATE THE RENDERER
-    // The renderer draws the scene using WebGL
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Better quality on retina screens
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    // STEP 4: CREATE YOUR FIRST 3D OBJECT - A CUBE!
-    // Every mesh needs TWO things: Geometry (shape) and Material (appearance)
-    
-    // Geometry: Defines the shape (vertices and faces)
-    const geometry = new THREE.BoxGeometry(1, 1, 1); // width, height, depth
-    
-    // Material: Defines how the surface looks
-    // MeshBasicMaterial doesn't react to lights - always visible
-    const material = new THREE.MeshBasicMaterial({ 
-      color: 0x00ff88,      // Cyan-green color
-      wireframe: false      // Set to true to see the wireframe
+    // ORBIT CONTROLS - Interactive camera movement
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; // Smooth camera movement
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 5;
+    controls.maxDistance = 20;
+
+    // ========================================
+    // LIGHTING SETUP
+    // Materials like MeshStandardMaterial need lights to be visible!
+    // ========================================
+
+    // Ambient Light - provides base illumination to all objects
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    // Directional Light - simulates sunlight
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7.5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    scene.add(directionalLight);
+
+    // Point Light - colored accent light
+    const pointLight = new THREE.PointLight(0xff6b6b, 0.5, 100);
+    pointLight.position.set(-5, 5, -5);
+    scene.add(pointLight);
+
+    // ========================================
+    // GEOMETRY GALLERY - All Built-in Shapes!
+    // ========================================
+
+    const shapes = [];
+    const spacing = 2.5; // Distance between shapes
+    let xPos = -7.5; // Starting X position
+    const yPos = 0;
+
+    // SHAPE 1: BOX GEOMETRY (Cube)
+    const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    const boxMat = new THREE.MeshStandardMaterial({
+      color: 0x00ff88,
+      metalness: 0.3,
+      roughness: 0.4
     });
-    
-    // Mesh: Combines geometry and material
-    const cube = new THREE.Mesh(geometry, material);
-    
-    // Add the cube to the scene
-    scene.add(cube);
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    box.position.set(xPos, yPos, 0);
+    box.castShadow = true;
+    box.receiveShadow = true;
+    scene.add(box);
+    shapes.push({ mesh: box, name: 'Box' });
+    xPos += spacing;
 
-    // STEP 5: ADD SOME EXTRA OBJECTS FOR FUN
-    // Let's create a second cube with different color and position
-    const geometry2 = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    const material2 = new THREE.MeshBasicMaterial({ color: 0xff6b6b }); // Red
-    const smallCube = new THREE.Mesh(geometry2, material2);
-    smallCube.position.x = -2; // Move it to the left
-    scene.add(smallCube);
+    // SHAPE 2: SPHERE GEOMETRY
+    const sphereGeo = new THREE.SphereGeometry(0.6, 32, 32);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0xff6b6b,
+      metalness: 0.7,
+      roughness: 0.2
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    sphere.position.set(xPos, yPos, 0);
+    sphere.castShadow = true;
+    sphere.receiveShadow = true;
+    scene.add(sphere);
+    shapes.push({ mesh: sphere, name: 'Sphere' });
+    xPos += spacing;
 
-    // And a third one
-    const geometry3 = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-    const material3 = new THREE.MeshBasicMaterial({ color: 0x4ecdc4 }); // Light blue
-    const mediumCube = new THREE.Mesh(geometry3, material3);
-    mediumCube.position.x = 2; // Move it to the right
-    scene.add(mediumCube);
+    // SHAPE 3: CONE GEOMETRY
+    const coneGeo = new THREE.ConeGeometry(0.6, 1.2, 32);
+    const coneMat = new THREE.MeshStandardMaterial({
+      color: 0xffd93d,
+      metalness: 0.1,
+      roughness: 0.6
+    });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(xPos, yPos, 0);
+    cone.castShadow = true;
+    cone.receiveShadow = true;
+    scene.add(cone);
+    shapes.push({ mesh: cone, name: 'Cone' });
+    xPos += spacing;
 
-    // STEP 6: ANIMATION LOOP
-    // This function will be called ~60 times per second
-    // It creates smooth animation by updating and rendering the scene
+    // SHAPE 4: CYLINDER GEOMETRY
+    const cylinderGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 32);
+    const cylinderMat = new THREE.MeshStandardMaterial({
+      color: 0x6bcf7f,
+      metalness: 0.5,
+      roughness: 0.3
+    });
+    const cylinder = new THREE.Mesh(cylinderGeo, cylinderMat);
+    cylinder.position.set(xPos, yPos, 0);
+    cylinder.castShadow = true;
+    cylinder.receiveShadow = true;
+    scene.add(cylinder);
+    shapes.push({ mesh: cylinder, name: 'Cylinder' });
+    xPos += spacing;
+
+    // SHAPE 5: TORUS GEOMETRY (Donut)
+    const torusGeo = new THREE.TorusGeometry(0.5, 0.2, 16, 100);
+    const torusMat = new THREE.MeshStandardMaterial({
+      color: 0x4ecdc4,
+      metalness: 0.8,
+      roughness: 0.1
+    });
+    const torus = new THREE.Mesh(torusGeo, torusMat);
+    torus.position.set(xPos, yPos, 0);
+    torus.castShadow = true;
+    torus.receiveShadow = true;
+    scene.add(torus);
+    shapes.push({ mesh: torus, name: 'Torus' });
+    xPos += spacing;
+
+    // SHAPE 6: TORUS KNOT GEOMETRY
+    const torusKnotGeo = new THREE.TorusKnotGeometry(0.5, 0.15, 100, 16);
+    const torusKnotMat = new THREE.MeshStandardMaterial({
+      color: 0xb794f6,
+      metalness: 0.6,
+      roughness: 0.2
+    });
+    const torusKnot = new THREE.Mesh(torusKnotGeo, torusKnotMat);
+    torusKnot.position.set(xPos, yPos, 0);
+    torusKnot.castShadow = true;
+    torusKnot.receiveShadow = true;
+    scene.add(torusKnot);
+    shapes.push({ mesh: torusKnot, name: 'TorusKnot' });
+
+    // ========================================
+    // MATERIAL COMPARISON - Second Row
+    // Same shape (sphere), different materials
+    // ========================================
+
+    const matShapes = [];
+    let matXPos = -5;
+    const matYPos = -2.5;
+
+    // MeshBasicMaterial - No lighting needed, always visible
+    const basicGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const basicMat = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+    const basicSphere = new THREE.Mesh(basicGeo, basicMat);
+    basicSphere.position.set(matXPos, matYPos, 0);
+    scene.add(basicSphere);
+    matShapes.push({ mesh: basicSphere, name: 'Basic' });
+    matXPos += 2.5;
+
+    // MeshLambertMaterial - Matte, non-shiny surface
+    const lambertGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const lambertMat = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+    const lambertSphere = new THREE.Mesh(lambertGeo, lambertMat);
+    lambertSphere.position.set(matXPos, matYPos, 0);
+    lambertSphere.castShadow = true;
+    lambertSphere.receiveShadow = true;
+    scene.add(lambertSphere);
+    matShapes.push({ mesh: lambertSphere, name: 'Lambert' });
+    matXPos += 2.5;
+
+    // MeshPhongMaterial - Shiny surface with specular highlights
+    const phongGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const phongMat = new THREE.MeshPhongMaterial({ 
+      color: 0xff00ff,
+      shininess: 100
+    });
+    const phongSphere = new THREE.Mesh(phongGeo, phongMat);
+    phongSphere.position.set(matXPos, matYPos, 0);
+    phongSphere.castShadow = true;
+    phongSphere.receiveShadow = true;
+    scene.add(phongSphere);
+    matShapes.push({ mesh: phongSphere, name: 'Phong' });
+    matXPos += 2.5;
+
+    // MeshStandardMaterial - Physically-based rendering (PBR)
+    const standardGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const standardMat = new THREE.MeshStandardMaterial({ 
+      color: 0xff00ff,
+      metalness: 0.7,
+      roughness: 0.2
+    });
+    const standardSphere = new THREE.Mesh(standardGeo, standardMat);
+    standardSphere.position.set(matXPos, matYPos, 0);
+    standardSphere.castShadow = true;
+    standardSphere.receiveShadow = true;
+    scene.add(standardSphere);
+    matShapes.push({ mesh: standardSphere, name: 'Standard' });
+
+    // ========================================
+    // GROUND PLANE - To receive shadows
+    // ========================================
+
+    const planeGeo = new THREE.PlaneGeometry(25, 10);
+    const planeMat = new THREE.MeshStandardMaterial({
+      color: 0x1a1a2e,
+      metalness: 0.0,
+      roughness: 0.8
+    });
+    const plane = new THREE.Mesh(planeGeo, planeMat);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1.5;
+    plane.receiveShadow = true;
+    scene.add(plane);
+
+    // ========================================
+    // WIREFRAME EXAMPLE - Third Row
+    // ========================================
+
+    const wireGeo = new THREE.IcosahedronGeometry(0.7, 0);
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      wireframe: true
+    });
+    const wireframe = new THREE.Mesh(wireGeo, wireMat);
+    wireframe.position.set(0, 2.5, 0);
+    scene.add(wireframe);
+
+    // ========================================
+    // ANIMATION LOOP
+    // ========================================
+
+    const clock = new THREE.Clock();
+
     function animate() {
-      // Schedule the next frame
       requestAnimationFrame(animate);
 
-      // ROTATE THE CUBES
-      // rotation values are in radians
-      cube.rotation.x += 0.01;  // Rotate around X axis
-      cube.rotation.y += 0.01;  // Rotate around Y axis
+      const elapsedTime = clock.getElapsedTime();
 
-      smallCube.rotation.x += 0.02;
-      smallCube.rotation.y += 0.015;
+      // Rotate all geometry shapes
+      shapes.forEach((shape, index) => {
+        shape.mesh.rotation.x = elapsedTime * 0.3;
+        shape.mesh.rotation.y = elapsedTime * 0.5;
+        
+        // Add a floating animation
+        shape.mesh.position.y = Math.sin(elapsedTime + index) * 0.2;
+      });
 
-      mediumCube.rotation.x += 0.008;
-      mediumCube.rotation.y += 0.02;
+      // Rotate material comparison spheres
+      matShapes.forEach((shape, index) => {
+        shape.mesh.rotation.y = elapsedTime * 0.5;
+      });
 
-      // RENDER THE SCENE
-      // This draws everything from the camera's perspective
+      // Rotate wireframe
+      wireframe.rotation.x = elapsedTime * 0.4;
+      wireframe.rotation.y = elapsedTime * 0.6;
+
+      // Animate point light in a circle
+      pointLight.position.x = Math.cos(elapsedTime * 0.5) * 8;
+      pointLight.position.z = Math.sin(elapsedTime * 0.5) * 8;
+
+      // Update controls
+      controls.update();
+
+      // Render
       renderer.render(scene, camera);
     }
 
-    // Start the animation loop
     animate();
 
-    // STEP 7: HANDLE WINDOW RESIZE
-    // Make the scene responsive to window size changes
-    window.addEventListener('resize', () => {
-      // Update camera aspect ratio
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix(); // MUST call this after changing camera properties
+    // ========================================
+    // WINDOW RESIZE HANDLER
+    // ========================================
 
-      // Update renderer size
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     });
 
-    // STEP 8: CONSOLE TIPS
-    console.log('🎉 Day 1: Three.js scene is running!');
-    console.log('📚 What you learned:');
-    console.log('  ✓ Scene: Container for all 3D objects');
-    console.log('  ✓ Camera: Your viewport into the 3D world');
-    console.log('  ✓ Renderer: Draws the scene using WebGL');
-    console.log('  ✓ Geometry: The shape (vertices and faces)');
-    console.log('  ✓ Material: The appearance (color, texture, etc.)');
-    console.log('  ✓ Mesh: Geometry + Material');
-    console.log('  ✓ Animation Loop: Updates scene every frame');
+    // ========================================
+    // CONSOLE LEARNING TIPS
+    // ========================================
+
+    console.log('🎨 Day 2: Shapes & Materials Gallery!');
     console.log('');
-    console.log('🔬 Experiment:');
-    console.log('  1. Change cube colors in the code');
-    console.log('  2. Try wireframe: true in materials');
-    console.log('  3. Adjust rotation speeds');
-    console.log('  4. Change camera.position.z value');
+    console.log('📦 TOP ROW - Geometry Types:');
+    shapes.forEach(shape => {
+      console.log(`  ✓ ${shape.name}Geometry`);
+    });
+    console.log('');
+    console.log('🎭 MIDDLE ROW - Material Types (same shape):');
+    matShapes.forEach(mat => {
+      console.log(`  ✓ Mesh${mat.name}Material`);
+    });
+    console.log('');
+    console.log('📚 What you learned:');
+    console.log('  ✓ BoxGeometry, SphereGeometry, ConeGeometry, etc.');
+    console.log('  ✓ MeshBasicMaterial (no lights needed)');
+    console.log('  ✓ MeshLambertMaterial (matte surface)');
+    console.log('  ✓ MeshPhongMaterial (shiny surface)');
+    console.log('  ✓ MeshStandardMaterial (PBR - most realistic)');
+    console.log('  ✓ Material properties: metalness, roughness, color');
+    console.log('  ✓ Wireframe mode for seeing geometry structure');
+    console.log('  ✓ Shadow casting and receiving');
+    console.log('  ✓ OrbitControls for camera interaction');
+    console.log('');
+    console.log('🔬 Experiment Ideas:');
+    console.log('  1. Change metalness values (0.0 to 1.0)');
+    console.log('  2. Change roughness values (0.0 to 1.0)');
+    console.log('  3. Try wireframe: true on different materials');
+    console.log('  4. Adjust geometry parameters (radius, segments, etc.)');
+    console.log('  5. Add your own custom shapes!');
   </script>
 </body>
 
