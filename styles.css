@@ -1,5 +1,5 @@
 /* ==========================================
-   Day 3: Camera & Controls Styles
+   Day 4: Let There Be Light Styles
    ========================================== */
 
 * {
@@ -11,7 +11,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #0a0a15;
+  background-color: #050510;
 }
 
 canvas {
@@ -25,67 +25,110 @@ canvas {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(30, 30, 50, 0.95));
+  background: linear-gradient(135deg, rgba(30, 20, 40, 0.95), rgba(20, 10, 30, 0.95));
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(255, 200, 100, 0.3);
   z-index: 100;
-  max-width: 420px;
+  max-width: 450px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(100, 150, 255, 0.3);
-  color: #e0e0ff;
+  border: 1px solid rgba(255, 200, 100, 0.3);
+  color: #f0e0ff;
 }
 
 .info-panel h1 {
   font-size: 24px;
-  color: #a0c4ff;
+  color: #ffdd88;
   margin-bottom: 10px;
   font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 221, 136, 0.5);
 }
 
 .info-panel p {
   font-size: 14px;
-  color: #d0d0e8;
+  color: #e0d0f0;
   margin: 6px 0;
   line-height: 1.6;
 }
 
 .info-panel strong {
-  color: #6699ff;
+  color: #ffcc66;
   font-weight: 600;
 }
 
-/* Camera Info Section */
-.camera-info {
+/* Lights Status Section */
+.lights-status {
   margin: 12px 0;
   padding: 12px;
-  background: rgba(100, 150, 255, 0.1);
+  background: rgba(100, 80, 150, 0.2);
   border-radius: 8px;
-  border-left: 3px solid #6699ff;
+  border-left: 3px solid #ffaa00;
 }
 
-.camera-info p {
-  margin: 4px 0;
+.lights-status p {
+  margin-bottom: 8px;
   font-size: 13px;
+  color: #ffcc88;
 }
 
-.camera-info span {
-  color: #88bbff;
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
+.lights-status ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.lights-status li {
+  font-size: 12px;
+  color: #d0c0e0;
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Light Indicators */
+.light-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.light-indicator.on {
+  background: radial-gradient(circle, #ffee00, #ffaa00);
+  box-shadow: 0 0 10px rgba(255, 238, 0, 0.8);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.light-indicator.off {
+  background: #333;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 238, 0, 0.8);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(255, 238, 0, 1);
+  }
 }
 
 /* Controls Info Section */
 .controls-info {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(100, 150, 255, 0.2);
+  border-top: 1px solid rgba(255, 200, 100, 0.3);
 }
 
 .controls-info p {
   margin-bottom: 6px;
   font-size: 13px;
-  color: #c0c0d8;
+  color: #d0c0e0;
 }
 
 .controls-info ul {
@@ -97,7 +140,7 @@ canvas {
 
 .controls-info li {
   font-size: 12px;
-  color: #b0b0cc;
+  color: #c0b0d0;
   margin: 4px 0;
   padding-left: 16px;
   position: relative;
@@ -107,7 +150,7 @@ canvas {
   content: '▸';
   position: absolute;
   left: 0;
-  color: #6699ff;
+  color: #ffaa00;
   font-weight: bold;
 }
 
@@ -115,14 +158,14 @@ canvas {
 kbd {
   display: inline-block;
   padding: 2px 6px;
-  background: linear-gradient(180deg, #3a3a5a, #2a2a4a);
-  border: 1px solid #5a5a7a;
+  background: linear-gradient(180deg, #554466, #443355);
+  border: 1px solid #776688;
   border-radius: 4px;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
   font-family: 'Courier New', monospace;
   font-size: 11px;
   font-weight: bold;
-  color: #a0c4ff;
+  color: #ffdd88;
   min-width: 20px;
   text-align: center;
 }
@@ -155,6 +198,11 @@ kbd {
     font-size: 10px;
     padding: 1px 4px;
   }
+
+  .light-indicator {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 /* Fade-in Animation */
@@ -163,6 +211,7 @@ kbd {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -175,13 +224,16 @@ kbd {
 
 /* Subtle glow animation for the panel */
 @keyframes subtleGlow {
-  0%, 100% {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    border-color: rgba(100, 150, 255, 0.3);
+
+  0%,
+  100% {
+    box-shadow: 0 8px 32px rgba(255, 200, 100, 0.3);
+    border-color: rgba(255, 200, 100, 0.3);
   }
+
   50% {
-    box-shadow: 0 8px 32px rgba(100, 150, 255, 0.3);
-    border-color: rgba(100, 150, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(255, 200, 100, 0.5);
+    border-color: rgba(255, 200, 100, 0.6);
   }
 }
 
@@ -195,15 +247,15 @@ kbd {
 }
 
 .info-panel::-webkit-scrollbar-track {
-  background: rgba(20, 20, 40, 0.5);
+  background: rgba(30, 20, 40, 0.5);
   border-radius: 3px;
 }
 
 .info-panel::-webkit-scrollbar-thumb {
-  background: rgba(100, 150, 255, 0.5);
+  background: rgba(255, 200, 100, 0.5);
   border-radius: 3px;
 }
 
 .info-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 150, 255, 0.7);
+  background: rgba(255, 200, 100, 0.7);
 }
