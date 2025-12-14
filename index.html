@@ -370,10 +370,8 @@
       // Update controls
       controls.update();
 
-      // Update camera info periodically (not every frame for performance)
-      if (Math.floor(elapsedTime * 10) % 10 === 0) {
-        updateCameraInfo();
-      }
+      // Update camera info display (every frame for real-time feedback)
+      updateCameraInfo();
 
       // Render
       renderer.render(scene, camera);
