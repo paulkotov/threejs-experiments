@@ -4,89 +4,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day 6: Animation & Transformations</title>
+  <title>Day 7: Custom Geometry & Shader Basics</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <!-- Day 6 Info Panel -->
+  <!-- Day 7 Info Panel -->
   <div class="info-panel">
-    <h1>🪐 Day 6: Animation & Transformations</h1>
-    <p><strong>Concept:</strong> Groups, Hierarchies & Complex Animations</p>
-    <p><strong>Skills:</strong> THREE.Group · Parent-Child · Orbital Motion</p>
-    <div class="animation-info">
-      <p><strong>🌌 Solar System Objects:</strong></p>
+    <h1>🏔️ Day 7: Custom Geometry & Shaders</h1>
+    <p><strong>Concept:</strong> BufferGeometry & GLSL Shader Programming</p>
+    <p><strong>Skills:</strong> Vertices · Attributes · Shaders · Uniforms</p>
+    <div class="shader-info">
+      <p><strong>🎨 Shader Features:</strong></p>
       <ul>
-        <li>☀️ Sun - Central star (rotating)</li>
-        <li>🔵 Earth - Orbiting sun + rotating</li>
-        <li>🌙 Moon - Orbiting Earth + rotating</li>
-        <li>🔴 Mars - Outer orbit + rotating</li>
-        <li>🛰️ Mars Moon - Orbiting Mars</li>
+        <li>✓ Custom vertex positions (100×100 grid)</li>
+        <li>✓ Animated wave displacement</li>
+        <li>✓ Height-based coloring</li>
+        <li>✓ Custom lighting in fragment shader</li>
+        <li>✓ Time-based animation uniforms</li>
       </ul>
     </div>
     <div class="controls-info">
       <p><strong>⌨️ Keyboard Controls:</strong></p>
       <ul>
-        <li><kbd>Space</kbd> - Pause/Resume animation</li>
-        <li><kbd>+</kbd> / <kbd>=</kbd> - Speed up time</li>
-        <li><kbd>-</kbd> - Slow down time</li>
-        <li><kbd>R</kbd> - Reset animation</li>
-        <li><kbd>1</kbd>-<kbd>4</kbd> - Focus camera on objects</li>
+        <li><kbd>Space</kbd> - Pause/Resume waves</li>
+        <li><kbd>W</kbd> - Toggle wireframe</li>
+        <li><kbd>+</kbd> / <kbd>-</kbd> - Wave speed</li>
+        <li><kbd>↑</kbd> / <kbd>↓</kbd> - Wave height</li>
+        <li><kbd>R</kbd> - Reset settings</li>
       </ul>
       <p><strong>🖱️ Mouse:</strong> Drag to rotate · Scroll to zoom</p>
-      <p><strong>⏱️ Speed:</strong> <span id="speed-display">1.0x</span></p>
+      <p><strong>⚡ Wave Speed:</strong> <span id="wave-speed">1.0x</span></p>
+      <p><strong>📊 Wave Height:</strong> <span id="wave-height">1.0x</span></p>
     </div>
   </div>
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+  
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
-  <!-- Day 6 Script -->
+  <!-- Day 7 Script -->
   <script>
     // ========================================
-    // DAY 6: ANIMATION & TRANSFORMATIONS
-    // Learning: Groups, Hierarchies, Orbital Motion
+    // DAY 7: CUSTOM GEOMETRY & SHADERS
+    // Learning: BufferGeometry, GLSL, Vertex/Fragment Shaders
     // ========================================
 
-    console.log('🪐 Day 6: Animation & Transformations');
-    console.log('Building solar system...');
+    console.log('🏔️ Day 7: Custom Geometry & Shader Basics');
+    console.log('Creating custom wave terrain...');
 
     // SCENE SETUP
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000510);
-
-    // Add starfield background
-    const starsGeometry = new THREE.BufferGeometry();
-    const starsMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.7,
-      sizeAttenuation: true
-    });
-
-    const starsVertices = [];
-    for (let i = 0; i < 10000; i++) {
-      const x = (Math.random() - 0.5) * 2000;
-      const y = (Math.random() - 0.5) * 2000;
-      const z = (Math.random() - 0.5) * 2000;
-      starsVertices.push(x, y, z);
-    }
-
-    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
-    const starField = new THREE.Points(starsGeometry, starsMaterial);
-    scene.add(starField);
+    scene.background = new THREE.Color(0x0a0a1e);
+    scene.fog = new THREE.Fog(0x0a0a1e, 50, 200);
 
     // CAMERA
     const camera = new THREE.PerspectiveCamera(
-      60,
+      75,
       window.innerWidth / window.innerHeight,
       0.1,
-      2000
+      1000
     );
-    camera.position.set(0, 50, 100);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 30, 50);
 
     // RENDERER
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -98,245 +79,255 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 20;
-    controls.maxDistance = 300;
+    controls.minDistance = 10;
+    controls.maxDistance = 150;
+    controls.maxPolarAngle = Math.PI / 2.1; // Prevent going below terrain
 
     // ========================================
-    // LIGHTING
+    // CUSTOM BUFFER GEOMETRY
+    // Creating a terrain grid from scratch
     // ========================================
 
-    const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
+    const gridSize = 100;  // 100x100 grid
+    const gridSpacing = 1;
+    const totalVertices = gridSize * gridSize;
+
+    // Create empty BufferGeometry
+    const geometry = new THREE.BufferGeometry();
+
+    // Arrays to hold our vertex data
+    const positions = [];  // x, y, z coordinates
+    const indices = [];    // Triangle indices
+    const uvs = [];       // UV coordinates for texturing
+    const colors = [];    // Vertex colors
+
+    // Generate vertices
+    for (let z = 0; z < gridSize; z++) {
+      for (let x = 0; x < gridSize; x++) {
+        // Position
+        const posX = (x - gridSize / 2) * gridSpacing;
+        const posY = 0; // Will be animated by shader
+        const posZ = (z - gridSize / 2) * gridSpacing;
+        positions.push(posX, posY, posZ);
+
+        // UV coordinates (0-1 range)
+        const u = x / (gridSize - 1);
+        const v = z / (gridSize - 1);
+        uvs.push(u, v);
+
+        // Initial vertex color (will be modified by shader)
+        colors.push(1, 1, 1);
+      }
+    }
+
+    // Generate indices (two triangles per quad)
+    for (let z = 0; z < gridSize - 1; z++) {
+      for (let x = 0; x < gridSize - 1; x++) {
+        const topLeft = z * gridSize + x;
+        const topRight = topLeft + 1;
+        const bottomLeft = (z + 1) * gridSize + x;
+        const bottomRight = bottomLeft + 1;
+
+        // First triangle
+        indices.push(topLeft, bottomLeft, topRight);
+        // Second triangle
+        indices.push(topRight, bottomLeft, bottomRight);
+      }
+    }
+
+    // Set attributes on geometry
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setIndex(indices);
+
+    // Compute normals for lighting
+    geometry.computeVertexNormals();
+
+    console.log(`✓ Created custom geometry: ${totalVertices} vertices, ${indices.length / 3} triangles`);
+
+    // ========================================
+    // CUSTOM SHADER MATERIAL
+    // Writing GLSL shaders from scratch!
+    // ========================================
+
+    // Vertex Shader - Runs for each vertex
+    const vertexShader = `
+      uniform float uTime;
+      uniform float uWaveSpeed;
+      uniform float uWaveHeight;
+      
+      varying vec3 vPosition;
+      varying float vElevation;
+      varying vec2 vUv;
+      
+      void main() {
+        vec3 pos = position;
+        
+        // Create waves using sine functions
+        float wave1 = sin(pos.x * 0.3 + uTime * uWaveSpeed) * uWaveHeight;
+        float wave2 = sin(pos.z * 0.4 + uTime * uWaveSpeed * 0.7) * uWaveHeight;
+        float wave3 = sin((pos.x + pos.z) * 0.2 + uTime * uWaveSpeed * 1.3) * uWaveHeight * 0.5;
+        
+        // Combine waves
+        pos.y += wave1 + wave2 + wave3;
+        
+        // Pass data to fragment shader
+        vPosition = pos;
+        vElevation = pos.y;
+        vUv = uv;
+        
+        // Final position
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }
+    `;
+
+    // Fragment Shader - Runs for each pixel
+    const fragmentShader = `
+      uniform float uTime;
+      
+      varying vec3 vPosition;
+      varying float vElevation;
+      varying vec2 vUv;
+      
+      void main() {
+        // Color based on height
+        vec3 deepColor = vec3(0.1, 0.05, 0.3);   // Dark purple (low)
+        vec3 midColor = vec3(0.2, 0.5, 0.8);      // Blue (mid)
+        vec3 peakColor = vec3(0.9, 0.9, 1.0);     // White (peak)
+        
+        // Normalize elevation (-waveHeight to +waveHeight)
+        float normalizedHeight = (vElevation + 3.0) / 6.0;
+        normalizedHeight = clamp(normalizedHeight, 0.0, 1.0);
+        
+        // Mix colors based on height
+        vec3 color;
+        if (normalizedHeight < 0.5) {
+          color = mix(deepColor, midColor, normalizedHeight * 2.0);
+        } else {
+          color = mix(midColor, peakColor, (normalizedHeight - 0.5) * 2.0);
+        }
+        
+        // Add subtle grid pattern
+        float gridX = abs(fract(vUv.x * 50.0) - 0.5);
+        float gridZ = abs(fract(vUv.y * 50.0) - 0.5);
+        float grid = step(0.48, min(gridX, gridZ)) * 0.1;
+        
+        color += grid;
+        
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    // Create shader material
+    const material = new THREE.ShaderMaterial({
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      uniforms: {
+        uTime: { value: 0.0 },
+        uWaveSpeed: { value: 1.0 },
+        uWaveHeight: { value: 3.0 }
+      },
+      wireframe: false,
+      side: THREE.DoubleSide
+    });
+
+    // Create mesh
+    const terrain = new THREE.Mesh(geometry, material);
+    scene.add(terrain);
+
+    // ========================================
+    // LIGHTING (for reference spheres)
+    // ========================================
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    // Point light at sun position
-    const sunLight = new THREE.PointLight(0xffffff, 2, 300);
-    sunLight.position.set(0, 0, 0);
-    scene.add(sunLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(10, 20, 10);
+    scene.add(directionalLight);
+
+    // Reference sphere (shows BufferGeometry basics)
+    const sphereGeo = new THREE.SphereGeometry(3, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0xff6b6b,
+      wireframe: false,
+      roughness: 0.5,
+      metalness: 0.5
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    sphere.position.set(30, 10, 0);
+    scene.add(sphere);
 
     // ========================================
     // ANIMATION VARIABLES
     // ========================================
 
-    let timeSpeed = 1.0;
     let isPaused = false;
-    let animationTime = 0; // Accumulated animation time (accounts for speed changes)
+    let waveSpeed = 1.0;
+    let waveHeight = 1.0;
     const clock = new THREE.Clock();
 
     // ========================================
-    // CREATE SUN
+    // UI UPDATE FUNCTIONS
     // ========================================
 
-    const sunGeometry = new THREE.SphereGeometry(8, 32, 32);
-    const sunMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffaa00,
-      emissive: 0xffaa00,
-      emissiveIntensity: 1.0
-    });
-    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-    scene.add(sun);
-
-    // Sun glow effect
-    const sunGlowGeometry = new THREE.SphereGeometry(9, 32, 32);
-    const sunGlowMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffaa00,
-      transparent: true,
-      opacity: 0.3
-    });
-    const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
-    sun.add(sunGlow);
-
-    // ========================================
-    // CREATE EARTH SYSTEM (Group Hierarchy)
-    // ========================================
-
-    // Earth orbit group (rotates around sun)
-    const earthOrbitGroup = new THREE.Group();
-    scene.add(earthOrbitGroup);
-
-    // Earth itself
-    const earthGeometry = new THREE.SphereGeometry(3, 32, 32);
-    const earthMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2233ff,
-      emissive: 0x112244,
-      emissiveIntensity: 0.2,
-      roughness: 0.8,
-      metalness: 0.2
-    });
-    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-    earth.position.x = 40; // Distance from sun
-    earthOrbitGroup.add(earth);
-
-    // Earth atmosphere glow
-    const atmosphereGeometry = new THREE.SphereGeometry(3.2, 32, 32);
-    const atmosphereMaterial = new THREE.MeshBasicMaterial({
-      color: 0x4488ff,
-      transparent: true,
-      opacity: 0.2,
-      side: THREE.BackSide
-    });
-    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-    earth.add(atmosphere);
-
-    // Moon orbit group (child of Earth!)
-    const moonOrbitGroup = new THREE.Group();
-    earth.add(moonOrbitGroup); // HIERARCHY: Moon orbits Earth, Earth orbits Sun
-
-    // Moon
-    const moonGeometry = new THREE.SphereGeometry(0.8, 16, 16);
-    const moonMaterial = new THREE.MeshStandardMaterial({
-      color: 0xaaaaaa,
-      roughness: 1.0,
-      metalness: 0
-    });
-    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.x = 8; // Distance from Earth
-    moonOrbitGroup.add(moon);
-
-    // Orbit path visualization for Earth
-    const earthOrbitCurve = new THREE.EllipseCurve(
-      0, 0,        // center
-      40, 40,      // xRadius, yRadius
-      0, 2 * Math.PI,
-      false,
-      0
-    );
-    const earthOrbitPoints = earthOrbitCurve.getPoints(100);
-    const earthOrbitGeometry = new THREE.BufferGeometry().setFromPoints(
-      earthOrbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y))
-    );
-    const earthOrbitMaterial = new THREE.LineBasicMaterial({
-      color: 0x2233ff,
-      opacity: 0.3,
-      transparent: true
-    });
-    const earthOrbitLine = new THREE.Line(earthOrbitGeometry, earthOrbitMaterial);
-    scene.add(earthOrbitLine);
-
-    // ========================================
-    // CREATE MARS SYSTEM
-    // ========================================
-
-    // Mars orbit group
-    const marsOrbitGroup = new THREE.Group();
-    scene.add(marsOrbitGroup);
-
-    // Mars
-    const marsGeometry = new THREE.SphereGeometry(2, 32, 32);
-    const marsMaterial = new THREE.MeshStandardMaterial({
-      color: 0xff4422,
-      emissive: 0x331100,
-      emissiveIntensity: 0.1,
-      roughness: 0.9,
-      metalness: 0.1
-    });
-    const mars = new THREE.Mesh(marsGeometry, marsMaterial);
-    mars.position.x = 65; // Distance from sun
-    marsOrbitGroup.add(mars);
-
-    // Mars moon (Phobos-like)
-    const marsMoonOrbitGroup = new THREE.Group();
-    mars.add(marsMoonOrbitGroup);
-
-    const marsMoonGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-    const marsMoonMaterial = new THREE.MeshStandardMaterial({
-      color: 0x888888,
-      roughness: 1.0
-    });
-    const marsMoon = new THREE.Mesh(marsMoonGeometry, marsMoonMaterial);
-    marsMoon.position.x = 5;
-    marsMoonOrbitGroup.add(marsMoon);
-
-    // Mars orbit path
-    const marsOrbitCurve = new THREE.EllipseCurve(0, 0, 65, 65, 0, 2 * Math.PI);
-    const marsOrbitPoints = marsOrbitCurve.getPoints(100);
-    const marsOrbitGeometry = new THREE.BufferGeometry().setFromPoints(
-      marsOrbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y))
-    );
-    const marsOrbitMaterial = new THREE.LineBasicMaterial({
-      color: 0xff4422,
-      opacity: 0.3,
-      transparent: true
-    });
-    const marsOrbitLine = new THREE.Line(marsOrbitGeometry, marsOrbitMaterial);
-    scene.add(marsOrbitLine);
-
-    // ========================================
-    // HELPER VISUALIZATIONS
-    // ========================================
-
-    // Orbital plane grid
-    const gridHelper = new THREE.GridHelper(200, 40, 0x444444, 0x222222);
-    gridHelper.material.opacity = 0.2;
-    gridHelper.material.transparent = true;
-    scene.add(gridHelper);
+    function updateUI() {
+      document.getElementById('wave-speed').textContent = (waveSpeed * material.uniforms.uWaveSpeed.value).toFixed(1) + 'x';
+      document.getElementById('wave-height').textContent = (waveHeight * material.uniforms.uWaveHeight.value / 3.0).toFixed(1) + 'x';
+    }
 
     // ========================================
     // KEYBOARD CONTROLS
     // ========================================
 
-    function updateSpeedDisplay() {
-      document.getElementById('speed-display').textContent = timeSpeed.toFixed(1) + 'x';
-    }
-
     window.addEventListener('keydown', (event) => {
-      switch (event.key) {
+      switch(event.key) {
         case ' ':
           isPaused = !isPaused;
-          console.log(isPaused ? '⏸️ Animation paused' : '▶️ Animation resumed');
-          // Don't stop/start clock - just skip updates when paused
-          // Clock keeps running to prevent elapsed time jumps
+          console.log(isPaused ? '⏸️ Waves paused' : '▶️ Waves resumed');
+          break;
+        case 'w':
+        case 'W':
+          material.wireframe = !material.wireframe;
+          sphereMat.wireframe = !sphereMat.wireframe;
+          console.log(`🔲 Wireframe: ${material.wireframe ? 'ON' : 'OFF'}`);
           break;
         case '+':
         case '=':
-          timeSpeed = Math.min(timeSpeed + 0.5, 10);
-          updateSpeedDisplay();
-          console.log(`⏩ Speed: ${timeSpeed.toFixed(1)}x`);
+          waveSpeed = Math.min(waveSpeed + 0.2, 5);
+          updateUI();
+          console.log(`⏩ Wave speed: ${waveSpeed.toFixed(1)}x`);
           break;
         case '-':
         case '_':
-          timeSpeed = Math.max(timeSpeed - 0.5, 0.1);
-          updateSpeedDisplay();
-          console.log(`⏪ Speed: ${timeSpeed.toFixed(1)}x`);
+          waveSpeed = Math.max(waveSpeed - 0.2, 0.1);
+          updateUI();
+          console.log(`⏪ Wave speed: ${waveSpeed.toFixed(1)}x`);
+          break;
+        case 'ArrowUp':
+          waveHeight = Math.min(waveHeight + 0.2, 3);
+          material.uniforms.uWaveHeight.value = waveHeight * 3.0;
+          updateUI();
+          console.log(`📈 Wave height: ${waveHeight.toFixed(1)}x`);
+          break;
+        case 'ArrowDown':
+          waveHeight = Math.max(waveHeight - 0.2, 0.2);
+          material.uniforms.uWaveHeight.value = waveHeight * 3.0;
+          updateUI();
+          console.log(`📉 Wave height: ${waveHeight.toFixed(1)}x`);
           break;
         case 'r':
         case 'R':
-          timeSpeed = 1.0;
           isPaused = false;
-          animationTime = 0; // Reset accumulated animation time
-          // Reset positions to initial state
-          earthOrbitGroup.rotation.y = 0;
-          marsOrbitGroup.rotation.y = 0;
-          earth.rotation.y = 0;
-          mars.rotation.y = 0;
-          moonOrbitGroup.rotation.y = 0;
-          marsMoonOrbitGroup.rotation.y = 0;
-          sun.rotation.y = 0;
-          updateSpeedDisplay();
-          console.log('🔄 Animation reset');
-          break;
-        case '1':
-          // Focus on Sun
-          camera.position.set(0, 20, 40);
-          controls.target.set(0, 0, 0);
-          console.log('📸 Camera focused on Sun');
-          break;
-        case '2':
-          // Follow Earth
-          camera.position.set(40, 10, 50);
-          controls.target.set(40, 0, 0);
-          console.log('📸 Camera focused on Earth');
-          break;
-        case '3':
-          // Follow Mars
-          camera.position.set(65, 15, 75);
-          controls.target.set(65, 0, 0);
-          console.log('📸 Camera focused on Mars');
-          break;
-        case '4':
-          // Full system view
-          camera.position.set(0, 80, 120);
-          controls.target.set(0, 0, 0);
-          console.log('📸 Full system view');
+          waveSpeed = 1.0;
+          waveHeight = 1.0;
+          material.uniforms.uWaveSpeed.value = 1.0;
+          material.uniforms.uWaveHeight.value = 3.0;
+          material.wireframe = false;
+          sphereMat.wireframe = false;
+          updateUI();
+          console.log('🔄 Reset to defaults');
           break;
       }
     });
@@ -348,62 +339,16 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Always call getDelta() to prevent time accumulation
       const delta = clock.getDelta();
 
       if (!isPaused) {
-        // Accumulate animation time with current speed
-        animationTime += delta * timeSpeed;
-        const elapsed = animationTime;
-
-        // ===== SUN ANIMATIONS =====
-        // Sun rotates on its axis
-        sun.rotation.y += delta * timeSpeed * 0.2;
-
-        // Pulsing glow effect
-        sunGlow.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.05);
-
-        // ===== EARTH SYSTEM ANIMATIONS =====
-        // Earth revolves around sun (group rotation)
-        earthOrbitGroup.rotation.y += delta * timeSpeed * 0.3;
-
-        // Earth rotates on its own axis (local rotation)
-        earth.rotation.y += delta * timeSpeed * 1.0;
-
-        // Earth tilts (axial tilt like real Earth)
-        earth.rotation.z = 0.4; // ~23 degrees tilt
-
-        // Moon revolves around Earth (group rotation)
-        moonOrbitGroup.rotation.y += delta * timeSpeed * 1.5;
-
-        // Moon rotates (tidally locked - same as orbit in reality)
-        moon.rotation.y += delta * timeSpeed * 1.5;
-
-        // ===== MARS SYSTEM ANIMATIONS =====
-        // Mars revolves around sun (slower than Earth)
-        marsOrbitGroup.rotation.y += delta * timeSpeed * 0.16;
-
-        // Mars rotates on its axis
-        mars.rotation.y += delta * timeSpeed * 0.95;
-
-        // Mars moon orbits Mars (fast orbit)
-        marsMoonOrbitGroup.rotation.y += delta * timeSpeed * 2.0;
-
-        // Mars moon rotation
-        marsMoon.rotation.y += delta * timeSpeed * 2.0;
-
-        // ===== VISUAL ENHANCEMENTS =====
-        // Slight vertical bobbing for visual interest
-        earth.position.y = Math.sin(elapsed * 0.5) * 0.5;
-        mars.position.y = Math.sin(elapsed * 0.3) * 0.3;
-
-        // Orbit lines fade in/out subtly
-        earthOrbitLine.material.opacity = 0.2 + Math.sin(elapsed) * 0.1;
-        marsOrbitLine.material.opacity = 0.2 + Math.sin(elapsed + Math.PI) * 0.1;
-
-        // Slowly rotate star field for depth
-        starField.rotation.y += delta * timeSpeed * 0.01;
+        // Update shader uniform for time-based animation
+        material.uniforms.uTime.value += delta * waveSpeed;
+        material.uniforms.uWaveSpeed.value = waveSpeed;
       }
+
+      // Rotate reference sphere
+      sphere.rotation.y += delta * 0.5;
 
       // Update controls
       controls.update();
@@ -431,28 +376,29 @@
 
     console.log('');
     console.log('📚 What you\'re learning:');
-    console.log('  ✓ THREE.Group - Hierarchical transformations');
-    console.log('  ✓ Parent-child relationships');
-    console.log('  ✓ Local vs world coordinates');
-    console.log('  ✓ Orbital motion (revolution vs rotation)');
-    console.log('  ✓ Multi-level hierarchies (Sun → Earth → Moon)');
-    console.log('  ✓ Animation timing and speed control');
-    console.log('  ✓ Delta time for frame-independent animation');
+    console.log('  ✓ BufferGeometry - Custom geometry creation');
+    console.log('  ✓ Vertices - Individual points in 3D space');
+    console.log('  ✓ Indices - Define triangles from vertices');
+    console.log('  ✓ Attributes - Data per vertex (position, uv, color)');
+    console.log('  ✓ GLSL - OpenGL Shading Language');
+    console.log('  ✓ Vertex Shader - Processes each vertex');
+    console.log('  ✓ Fragment Shader - Processes each pixel');
+    console.log('  ✓ Uniforms - Variables passed from JavaScript');
+    console.log('  ✓ Varyings - Data passed vertex → fragment');
     console.log('');
     console.log('🎮 Try these:');
-    console.log('  Space: Pause and observe the hierarchy');
-    console.log('  +/-: Speed up/slow down time');
-    console.log('  1-4: Focus camera on different objects');
-    console.log('  R: Reset animation');
+    console.log('  W: Toggle wireframe to see the geometry structure');
+    console.log('  +/-: Change wave animation speed');
+    console.log('  ↑↓: Adjust wave amplitude');
+    console.log('  Space: Pause and observe');
     console.log('');
-    console.log('💡 Key Concepts:');
-    console.log('  - Revolution = orbit around parent');
-    console.log('  - Rotation = spin on own axis');
-    console.log('  - Groups enable complex motion hierarchies');
-    console.log('  - Moon inherits Earth\'s orbital motion automatically!');
+    console.log('💡 Notice:');
+    console.log('  - 100×100 grid = 10,000 vertices!');
+    console.log('  - Colors computed per-pixel in fragment shader');
+    console.log('  - Waves calculated in vertex shader (GPU accelerated)');
 
-    // Initial speed display
-    updateSpeedDisplay();
+    // Initial UI update
+    updateUI();
   </script>
 </body>
 
