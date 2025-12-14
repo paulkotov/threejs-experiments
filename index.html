@@ -354,54 +354,52 @@
       if (!isPaused) {
         // Accumulate animation time with current speed
         animationTime += delta * timeSpeed;
-      }
-      
-      const elapsed = animationTime;
+        const elapsed = animationTime;
 
         // ===== SUN ANIMATIONS =====
-        // Sun rotates on its axis
-        sun.rotation.y += delta * timeSpeed * 0.2;
+      // Sun rotates on its axis
+      sun.rotation.y += delta * timeSpeed * 0.2;
 
-        // Pulsing glow effect
-        sunGlow.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.05);
+      // Pulsing glow effect
+      sunGlow.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.05);
 
-        // ===== EARTH SYSTEM ANIMATIONS =====
-        // Earth revolves around sun (group rotation)
-        earthOrbitGroup.rotation.y += delta * timeSpeed * 0.3;
+      // ===== EARTH SYSTEM ANIMATIONS =====
+      // Earth revolves around sun (group rotation)
+      earthOrbitGroup.rotation.y += delta * timeSpeed * 0.3;
 
-        // Earth rotates on its own axis (local rotation)
-        earth.rotation.y += delta * timeSpeed * 1.0;
+      // Earth rotates on its own axis (local rotation)
+      earth.rotation.y += delta * timeSpeed * 1.0;
 
-        // Earth tilts (axial tilt like real Earth)
-        earth.rotation.z = 0.4; // ~23 degrees tilt
+      // Earth tilts (axial tilt like real Earth)
+      earth.rotation.z = 0.4; // ~23 degrees tilt
 
-        // Moon revolves around Earth (group rotation)
-        moonOrbitGroup.rotation.y += delta * timeSpeed * 1.5;
+      // Moon revolves around Earth (group rotation)
+      moonOrbitGroup.rotation.y += delta * timeSpeed * 1.5;
 
-        // Moon rotates (tidally locked - same as orbit in reality)
-        moon.rotation.y += delta * timeSpeed * 1.5;
+      // Moon rotates (tidally locked - same as orbit in reality)
+      moon.rotation.y += delta * timeSpeed * 1.5;
 
-        // ===== MARS SYSTEM ANIMATIONS =====
-        // Mars revolves around sun (slower than Earth)
-        marsOrbitGroup.rotation.y += delta * timeSpeed * 0.16;
+      // ===== MARS SYSTEM ANIMATIONS =====
+      // Mars revolves around sun (slower than Earth)
+      marsOrbitGroup.rotation.y += delta * timeSpeed * 0.16;
 
-        // Mars rotates on its axis
-        mars.rotation.y += delta * timeSpeed * 0.95;
+      // Mars rotates on its axis
+      mars.rotation.y += delta * timeSpeed * 0.95;
 
-        // Mars moon orbits Mars (fast orbit)
-        marsMoonOrbitGroup.rotation.y += delta * timeSpeed * 2.0;
+      // Mars moon orbits Mars (fast orbit)
+      marsMoonOrbitGroup.rotation.y += delta * timeSpeed * 2.0;
 
-        // Mars moon rotation
-        marsMoon.rotation.y += delta * timeSpeed * 2.0;
+      // Mars moon rotation
+      marsMoon.rotation.y += delta * timeSpeed * 2.0;
 
-        // ===== VISUAL ENHANCEMENTS =====
-        // Slight vertical bobbing for visual interest
-        earth.position.y = Math.sin(elapsed * 0.5) * 0.5;
-        mars.position.y = Math.sin(elapsed * 0.3) * 0.3;
+      // ===== VISUAL ENHANCEMENTS =====
+      // Slight vertical bobbing for visual interest
+      earth.position.y = Math.sin(elapsed * 0.5) * 0.5;
+      mars.position.y = Math.sin(elapsed * 0.3) * 0.3;
 
-        // Orbit lines fade in/out subtly
-        earthOrbitLine.material.opacity = 0.2 + Math.sin(elapsed) * 0.1;
-        marsOrbitLine.material.opacity = 0.2 + Math.sin(elapsed + Math.PI) * 0.1;
+      // Orbit lines fade in/out subtly
+      earthOrbitLine.material.opacity = 0.2 + Math.sin(elapsed) * 0.1;
+      marsOrbitLine.material.opacity = 0.2 + Math.sin(elapsed + Math.PI) * 0.1;
 
         // Slowly rotate star field for depth
         starField.rotation.y += delta * timeSpeed * 0.01;
@@ -410,8 +408,8 @@
       // Update controls
       controls.update();
 
-      // Render
-      renderer.render(scene, camera);
+    // Render
+    renderer.render(scene, camera);
     }
 
     animate();
