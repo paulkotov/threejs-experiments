@@ -40,7 +40,7 @@
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  
+
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
@@ -98,8 +98,8 @@
     function generateGalaxy(count) {
       // Remove old galaxy if exists
       if (galaxy) {
-        geometry.dispose();
-        material.dispose();
+        galaxy.userData.geometry.dispose();
+        galaxy.userData.material.dispose();
         scene.remove(galaxy);
       }
 
@@ -133,28 +133,28 @@
         // POSITION
         // Distance from center (0 to radius)
         const r = Math.random() * radius;
-        
+
         // Spiral angle
         const branchAngle = (i % branches) / branches * Math.PI * 2;
         const spinAngle = r * spin;
-        
+
         // Add randomness
         const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
         const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
         const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * radius * 0.1;
-        
+
         // Calculate position
         const x = Math.cos(branchAngle + spinAngle) * r + randomX;
         const y = randomY;
         const z = Math.sin(branchAngle + spinAngle) * r + randomZ;
-        
+
         positions.push(x, y, z);
 
         // COLOR
         // Mix colors based on distance from center
         const mixedColor = currentScheme.inner.clone();
         mixedColor.lerp(currentScheme.outer, r / radius);
-        
+
         colors.push(mixedColor.r, mixedColor.g, mixedColor.b);
 
         // SIZE
@@ -203,7 +203,7 @@
     let fps = 60;
 
     function updateUI() {
-      document.getElementById('particle-count').textContent = 
+      document.getElementById('particle-count').textContent =
         `Particles: ${particleCount.toLocaleString()}`;
     }
 
@@ -223,7 +223,7 @@
     // ========================================
 
     window.addEventListener('keydown', (event) => {
-      switch(event.key) {
+      switch (event.key) {
         case ' ':
           isPaused = !isPaused;
           console.log(isPaused ? '⏸️ Rotation paused' : '▶️ Rotation resumed');
