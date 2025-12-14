@@ -4,63 +4,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day 4: Let There Be Light - Illumination Techniques</title>
+  <title>Day 5: Textures & Advanced Materials</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <!-- Day 4 Info Panel -->
+  <!-- Day 5 Info Panel -->
   <div class="info-panel">
-    <h1>💡 Day 4: Let There Be Light</h1>
-    <p><strong>Concept:</strong> Mastering Illumination & Shadows</p>
-    <p><strong>Skills:</strong> Light Types · Shadow Quality · Atmosphere · Mood</p>
-
-    <div class="lights-status">
-      <p><strong>🔆 Active Lights:</strong></p>
-      <ul id="lights-list">
-        <li><span class="light-indicator on" id="ambient-indicator">●</span> Ambient Light</li>
-        <li><span class="light-indicator on" id="directional-indicator">●</span> Directional Light</li>
-        <li><span class="light-indicator on" id="point-indicator">●</span> Point Light</li>
-        <li><span class="light-indicator off" id="spot-indicator">●</span> Spot Light</li>
-        <li><span class="light-indicator on" id="hemisphere-indicator">●</span> Hemisphere Light</li>
+    <h1>🖼️ Day 5: Textures & Materials</h1>
+    <p><strong>Concept:</strong> Surface Details & Realistic Materials</p>
+    <p><strong>Skills:</strong> Texture Maps · UV Mapping · PBR Workflow</p>
+    <div class="texture-info">
+      <p><strong>📊 Active Texture Maps:</strong></p>
+      <ul>
+        <li>✓ Color/Albedo - Base surface color</li>
+        <li>✓ Normal Map - Surface detail illusion</li>
+        <li>✓ Roughness Map - Surface smoothness variation</li>
+        <li>✓ Metalness Map - Metallic areas</li>
+        <li>✓ AO (Ambient Occlusion) - Crevice darkening</li>
       </ul>
     </div>
-
     <div class="controls-info">
       <p><strong>⌨️ Keyboard Controls:</strong></p>
       <ul>
-        <li><kbd>A</kbd> - Toggle Ambient Light</li>
-        <li><kbd>D</kbd> - Toggle Directional Light</li>
-        <li><kbd>P</kbd> - Toggle Point Light</li>
-        <li><kbd>S</kbd> - Toggle Spot Light</li>
-        <li><kbd>H</kbd> - Toggle Hemisphere Light</li>
-        <li><kbd>L</kbd> - Toggle Light Helpers</li>
-        <li><kbd>R</kbd> - Reset All Lights</li>
+        <li><kbd>1</kbd> - Show Color Map only</li>
+        <li><kbd>2</kbd> - Show Normal Map effect</li>
+        <li><kbd>3</kbd> - Show Roughness variation</li>
+        <li><kbd>4</kbd> - All maps (PBR)</li>
+        <li><kbd>5</kbd> - Wireframe UV view</li>
+        <li><kbd>R</kbd> - Reset view</li>
       </ul>
-      <p><strong>🖱️ Mouse:</strong></p>
-      <ul>
-        <li>Drag to rotate · Scroll to zoom</li>
-      </ul>
+      <p><strong>🖱️ Mouse:</strong> Drag to rotate · Scroll to zoom</p>
     </div>
   </div>
 
   <!-- ThreeJS Core Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+  
   <!-- OrbitControls -->
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 
-  <!-- Day 4 Script -->
+  <!-- Day 5 Script -->
   <script>
     // ========================================
-    // DAY 4: LET THERE BE LIGHT!
-    // Learning: Light Types, Shadows, Atmosphere
+    // DAY 5: TEXTURES & ADVANCED MATERIALS
+    // Learning: Texture Loading, UV Mapping, PBR Workflow
     // ========================================
+
+    console.log('🖼️ Day 5: Textures & Advanced Materials');
+    console.log('Creating procedural textures...');
 
     // SCENE SETUP
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050510);
-    scene.fog = new THREE.Fog(0x050510, 10, 50);
+    scene.background = new THREE.Color(0x1a1a2e);
 
     // CAMERA
     const camera = new THREE.PerspectiveCamera(
@@ -69,170 +65,419 @@
       0.1,
       1000
     );
-    camera.position.set(8, 6, 8);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 2, 5);
 
     // RENDERER
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
     // ORBIT CONTROLS
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2;
+    controls.minDistance = 3;
+    controls.maxDistance = 15;
 
     // ========================================
-    // CREATE SCENE OBJECTS
+    // PROCEDURAL TEXTURE GENERATION
+    // Creating textures without external images
     // ========================================
 
-    // GROUND PLANE
-    const groundGeo = new THREE.PlaneGeometry(30, 30);
-    const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1a2e,
+    function createColorTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Create brick-like pattern
+      const brickWidth = 128;
+      const brickHeight = 64;
+      const mortarSize = 8;
+
+      for (let y = 0; y < canvas.height; y += brickHeight) {
+        for (let x = 0; x < canvas.width; x += brickWidth) {
+          // Offset every other row
+          const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+          
+          // Brick color with variation
+          const variation = Math.random() * 20 - 10;
+          ctx.fillStyle = `rgb(${180 + variation}, ${80 + variation}, ${60 + variation})`;
+          ctx.fillRect(
+            (x + offsetX) % canvas.width,
+            y,
+            brickWidth - mortarSize,
+            brickHeight - mortarSize
+          );
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 2);
+      return texture;
+    }
+
+    function createNormalMap() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Base normal color (pointing straight out = RGB(128, 128, 255))
+      ctx.fillStyle = 'rgb(128, 128, 255)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Add bump details
+      const brickWidth = 128;
+      const brickHeight = 64;
+
+      for (let y = 0; y < canvas.height; y += brickHeight) {
+        for (let x = 0; x < canvas.width; x += brickWidth) {
+          const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+          
+          // Create gradient for brick edges (simulates depth)
+          const gradient = ctx.createLinearGradient(
+            (x + offsetX) % canvas.width,
+            y,
+            (x + offsetX) % canvas.width + brickWidth - 8,
+            y + brickHeight - 8
+          );
+          gradient.addColorStop(0, 'rgb(100, 100, 255)');
+          gradient.addColorStop(0.5, 'rgb(128, 128, 255)');
+          gradient.addColorStop(1, 'rgb(150, 150, 255)');
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(
+            (x + offsetX) % canvas.width,
+            y,
+            brickWidth - 8,
+            brickHeight - 8
+          );
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 2);
+      return texture;
+    }
+
+    function createRoughnessMap() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Variable roughness - mortar is rougher (lighter), bricks vary
+      ctx.fillStyle = 'rgb(200, 200, 200)'; // Mortar - rough
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const brickWidth = 128;
+      const brickHeight = 64;
+
+      for (let y = 0; y < canvas.height; y += brickHeight) {
+        for (let x = 0; x < canvas.width; x += brickWidth) {
+          const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+          
+          // Bricks - smoother (darker)
+          const roughness = Math.random() * 50 + 100; // 100-150
+          ctx.fillStyle = `rgb(${roughness}, ${roughness}, ${roughness})`;
+          ctx.fillRect(
+            (x + offsetX) % canvas.width,
+            y,
+            brickWidth - 8,
+            brickHeight - 8
+          );
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 2);
+      return texture;
+    }
+
+    function createMetalnessMap() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Non-metallic base (bricks)
+      ctx.fillStyle = 'rgb(0, 0, 0)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Add some metallic specks randomly
+      for (let i = 0; i < 100; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const size = Math.random() * 10 + 5;
+        ctx.fillStyle = 'rgb(255, 255, 255)';
+        ctx.fillRect(x, y, size, size);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 2);
+      return texture;
+    }
+
+    function createAOMap() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Base - fully lit
+      ctx.fillStyle = 'rgb(255, 255, 255)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Darken mortar gaps (ambient occlusion)
+      ctx.fillStyle = 'rgb(100, 100, 100)';
+      const brickWidth = 128;
+      const brickHeight = 64;
+
+      for (let y = 0; y < canvas.height; y += brickHeight) {
+        for (let x = 0; x < canvas.width; x += brickWidth) {
+          const offsetX = (y / brickHeight) % 2 === 0 ? 0 : brickWidth / 2;
+          
+          // Draw dark lines for gaps
+          ctx.fillRect((x + offsetX) % canvas.width + brickWidth - 8, y, 8, brickHeight);
+          ctx.fillRect((x + offsetX) % canvas.width, y + brickHeight - 8, brickWidth, 8);
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(2, 2);
+      return texture;
+    }
+
+    function createCheckerTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      const tileSize = 64;
+      for (let y = 0; y < canvas.height; y += tileSize) {
+        for (let x = 0; x < canvas.width; x += tileSize) {
+          const isEven = ((x / tileSize) + (y / tileSize)) % 2 === 0;
+          ctx.fillStyle = isEven ? '#ffffff' : '#cccccc';
+          ctx.fillRect(x, y, tileSize, tileSize);
+        }
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      return texture;
+    }
+
+    // Create all texture maps
+    const colorMap = createColorTexture();
+    const normalMap = createNormalMap();
+    const roughnessMap = createRoughnessMap();
+    const metalnessMap = createMetalnessMap();
+    const aoMap = createAOMap();
+    const checkerMap = createCheckerTexture();
+
+    console.log('✓ Textures created successfully');
+
+    // ========================================
+    // LIGHTING
+    // ========================================
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 7);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    scene.add(directionalLight);
+
+    // Point lights for better material visibility
+    const pointLight1 = new THREE.PointLight(0x4488ff, 0.5, 20);
+    pointLight1.position.set(-5, 3, 5);
+    scene.add(pointLight1);
+
+    const pointLight2 = new THREE.PointLight(0xff8844, 0.5, 20);
+    pointLight2.position.set(5, 3, -5);
+    scene.add(pointLight2);
+
+    // ========================================
+    // CREATE DEMO OBJECTS
+    // ========================================
+
+    // Main demonstration sphere with all texture maps
+    const sphereGeometry = new THREE.SphereGeometry(1.5, 64, 64);
+    const sphereMaterial = new THREE.MeshStandardMaterial({
+      map: colorMap,
+      normalMap: normalMap,
+      normalScale: new THREE.Vector2(0.5, 0.5),
+      roughnessMap: roughnessMap,
       roughness: 0.8,
-      metalness: 0.2
+      metalnessMap: metalnessMap,
+      metalness: 0.2,
+      aoMap: aoMap,
+      aoMapIntensity: 1.0
     });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
 
-    // CENTRAL SPHERE (Main showcase object)
-    const sphereGeo = new THREE.SphereGeometry(1.5, 64, 64);
-    const sphereMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.3,
-      metalness: 0.7
-    });
-    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    sphere.position.y = 1.5;
+    // Need to set second UV channel for AO map
+    sphereGeometry.setAttribute('uv2', sphereGeometry.attributes.uv);
+
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.set(0, 1.5, 0);
     sphere.castShadow = true;
     sphere.receiveShadow = true;
     scene.add(sphere);
 
-    // SURROUNDING CUBES
-    const cubes = [];
-    const cubeGeo = new THREE.BoxGeometry(1, 2, 1);
-    const cubePositions = [
-      { x: -4, z: -4 }, { x: 4, z: -4 },
-      { x: -4, z: 4 }, { x: 4, z: 4 },
-      { x: 0, z: -5 }, { x: 0, z: 5 },
-      { x: -5, z: 0 }, { x: 5, z: 0 }
-    ];
+    // Comparison cubes showing individual maps
+    const cubeSize = 0.8;
+    const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 
-    cubePositions.forEach((pos, i) => {
-      const cubeMat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(i / cubePositions.length, 0.7, 0.5),
-        roughness: 0.5,
-        metalness: 0.3
-      });
-      const cube = new THREE.Mesh(cubeGeo, cubeMat);
-      cube.position.set(pos.x, 1, pos.z);
-      cube.castShadow = true;
-      cube.receiveShadow = true;
-      scene.add(cube);
-      cubes.push(cube);
+    // Cube 1: Color map only
+    const cube1Material = new THREE.MeshStandardMaterial({
+      map: colorMap,
+      roughness: 0.8,
+      metalness: 0
     });
+    const cube1 = new THREE.Mesh(cubeGeometry, cube1Material);
+    cube1.position.set(-3, 0.5, 2);
+    cube1.castShadow = true;
+    scene.add(cube1);
 
-    // BACK WALL (to show light direction)
-    const wallGeo = new THREE.PlaneGeometry(20, 10);
-    const wallMat = new THREE.MeshStandardMaterial({
-      color: 0x2a2a3e,
-      roughness: 0.9,
-      metalness: 0.1
+    // Cube 2: Normal map only
+    const cube2Material = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      normalMap: normalMap,
+      normalScale: new THREE.Vector2(1, 1),
+      roughness: 0.5,
+      metalness: 0
     });
-    const wall = new THREE.Mesh(wallGeo, wallMat);
-    wall.position.set(0, 5, -10);
-    wall.receiveShadow = true;
-    scene.add(wall);
+    const cube2 = new THREE.Mesh(cubeGeometry, cube2Material);
+    cube2.position.set(-1, 0.5, 2);
+    cube2.castShadow = true;
+    scene.add(cube2);
+
+    // Cube 3: Roughness variation
+    const cube3Material = new THREE.MeshStandardMaterial({
+      color: 0x888888,
+      roughnessMap: roughnessMap,
+      roughness: 1.0,
+      metalness: 0
+    });
+    const cube3 = new THREE.Mesh(cubeGeometry, cube3Material);
+    cube3.position.set(1, 0.5, 2);
+    cube3.castShadow = true;
+    scene.add(cube3);
+
+    // Cube 4: Metalness variation
+    const cube4Material = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalnessMap: metalnessMap,
+      metalness: 1.0,
+      roughness: 0.2
+    });
+    const cube4 = new THREE.Mesh(cubeGeometry, cube4Material);
+    cube4.position.set(3, 0.5, 2);
+    cube4.castShadow = true;
+    scene.add(cube4);
+
+    // Ground plane with checker texture
+    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeMaterial = new THREE.MeshStandardMaterial({
+      map: checkerMap,
+      roughness: 0.8,
+      metalness: 0
+    });
+    checkerMap.repeat.set(10, 10);
+    
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = -Math.PI / 2;
+    plane.receiveShadow = true;
+    scene.add(plane);
 
     // ========================================
-    // LIGHTS - The Stars of Day 4!
+    // DISPLAY MODES
     // ========================================
 
-    const lights = {};
-    const helpers = {};
-    let helpersVisible = false;
+    let displayMode = 'all';
 
-    // 1. AMBIENT LIGHT - Base illumination everywhere
-    lights.ambient = new THREE.AmbientLight(0x404040, 0.3);
-    scene.add(lights.ambient);
-
-    // 2. DIRECTIONAL LIGHT - Simulates sun
-    lights.directional = new THREE.DirectionalLight(0xffffff, 0.8);
-    lights.directional.position.set(5, 10, 3);
-    lights.directional.castShadow = true;
-
-    // Configure shadow quality
-    lights.directional.shadow.mapSize.width = 2048;
-    lights.directional.shadow.mapSize.height = 2048;
-    lights.directional.shadow.camera.left = -15;
-    lights.directional.shadow.camera.right = 15;
-    lights.directional.shadow.camera.top = 15;
-    lights.directional.shadow.camera.bottom = -15;
-    lights.directional.shadow.camera.near = 0.1;
-    lights.directional.shadow.camera.far = 40;
-
-    scene.add(lights.directional);
-    helpers.directional = new THREE.DirectionalLightHelper(lights.directional, 1);
-
-    // 3. POINT LIGHT - Light bulb (animated)
-    lights.point = new THREE.PointLight(0xff6b00, 1, 50, 2);
-    lights.point.position.set(-3, 3, 2);
-    lights.point.castShadow = true;
-    lights.point.shadow.mapSize.width = 1024;
-    lights.point.shadow.mapSize.height = 1024;
-    scene.add(lights.point);
-    helpers.point = new THREE.PointLightHelper(lights.point, 0.5);
-
-    // 4. SPOT LIGHT - Flashlight/stage light (starts off)
-    lights.spot = new THREE.SpotLight(0x00ffff, 2, 20, Math.PI / 6, 0.3, 2);
-    lights.spot.position.set(0, 8, 0);
-    lights.spot.target.position.set(0, 0, 0);
-    lights.spot.castShadow = true;
-    lights.spot.shadow.mapSize.width = 1024;
-    lights.spot.shadow.mapSize.height = 1024;
-    scene.add(lights.spot);
-    scene.add(lights.spot.target);
-    lights.spot.visible = false; // Start off
-    helpers.spot = new THREE.SpotLightHelper(lights.spot);
-
-    // 5. HEMISPHERE LIGHT - Sky and ground colors
-    lights.hemisphere = new THREE.HemisphereLight(0x4488ff, 0xff8844, 0.4);
-    lights.hemisphere.position.set(0, 10, 0);
-    scene.add(lights.hemisphere);
-    helpers.hemisphere = new THREE.HemisphereLightHelper(lights.hemisphere, 1);
-
-    // ========================================
-    // UI UPDATE FUNCTIONS
-    // ========================================
-
-    function updateLightIndicators() {
-      document.getElementById('ambient-indicator').className =
-        `light-indicator ${lights.ambient.visible ? 'on' : 'off'}`;
-      document.getElementById('directional-indicator').className =
-        `light-indicator ${lights.directional.visible ? 'on' : 'off'}`;
-      document.getElementById('point-indicator').className =
-        `light-indicator ${lights.point.visible ? 'on' : 'off'}`;
-      document.getElementById('spot-indicator').className =
-        `light-indicator ${lights.spot.visible ? 'on' : 'off'}`;
-      document.getElementById('hemisphere-indicator').className =
-        `light-indicator ${lights.hemisphere.visible ? 'on' : 'off'}`;
-    }
-
-    function toggleLightHelper(name) {
-      if (helpers[name]) {
-        if (helpersVisible && lights[name].visible) {
-          scene.add(helpers[name]);
-        } else {
-          scene.remove(helpers[name]);
-        }
+    function setDisplayMode(mode) {
+      displayMode = mode;
+      
+      switch(mode) {
+        case 'color':
+          sphereMaterial.map = colorMap;
+          sphereMaterial.normalMap = null;
+          sphereMaterial.roughnessMap = null;
+          sphereMaterial.metalnessMap = null;
+          sphereMaterial.aoMap = null;
+          sphereMaterial.roughness = 0.8;
+          sphereMaterial.metalness = 0;
+          sphereMaterial.wireframe = false;
+          console.log('📷 Mode: Color Map Only');
+          break;
+          
+        case 'normal':
+          sphereMaterial.map = null;
+          sphereMaterial.color.setHex(0xcccccc);
+          sphereMaterial.normalMap = normalMap;
+          sphereMaterial.normalScale.set(2, 2);
+          sphereMaterial.roughnessMap = null;
+          sphereMaterial.metalnessMap = null;
+          sphereMaterial.aoMap = null;
+          sphereMaterial.roughness = 0.5;
+          sphereMaterial.metalness = 0;
+          sphereMaterial.wireframe = false;
+          console.log('📷 Mode: Normal Map Effect');
+          break;
+          
+        case 'roughness':
+          sphereMaterial.map = null;
+          sphereMaterial.color.setHex(0x888888);
+          sphereMaterial.normalMap = null;
+          sphereMaterial.roughnessMap = roughnessMap;
+          sphereMaterial.metalnessMap = null;
+          sphereMaterial.aoMap = null;
+          sphereMaterial.roughness = 1.0;
+          sphereMaterial.metalness = 0;
+          sphereMaterial.wireframe = false;
+          console.log('📷 Mode: Roughness Variation');
+          break;
+          
+        case 'all':
+          sphereMaterial.map = colorMap;
+          sphereMaterial.normalMap = normalMap;
+          sphereMaterial.normalScale.set(0.5, 0.5);
+          sphereMaterial.roughnessMap = roughnessMap;
+          sphereMaterial.metalnessMap = metalnessMap;
+          sphereMaterial.aoMap = aoMap;
+          sphereMaterial.roughness = 0.8;
+          sphereMaterial.metalness = 0.2;
+          sphereMaterial.wireframe = false;
+          console.log('📷 Mode: All Maps (Full PBR)');
+          break;
+          
+        case 'wireframe':
+          sphereMaterial.wireframe = true;
+          console.log('📷 Mode: Wireframe UV View');
+          break;
       }
+      
+      sphereMaterial.needsUpdate = true;
     }
 
     // ========================================
@@ -240,61 +485,30 @@
     // ========================================
 
     window.addEventListener('keydown', (event) => {
-      switch (event.key.toLowerCase()) {
-        case 'a':
-          lights.ambient.visible = !lights.ambient.visible;
-          console.log(`💡 Ambient Light: ${lights.ambient.visible ? 'ON' : 'OFF'}`);
+      switch(event.key) {
+        case '1':
+          setDisplayMode('color');
           break;
-
-        case 'd':
-          lights.directional.visible = !lights.directional.visible;
-          toggleLightHelper('directional');
-          console.log(`☀️ Directional Light: ${lights.directional.visible ? 'ON' : 'OFF'}`);
+        case '2':
+          setDisplayMode('normal');
           break;
-
-        case 'p':
-          lights.point.visible = !lights.point.visible;
-          toggleLightHelper('point');
-          console.log(`💡 Point Light: ${lights.point.visible ? 'ON' : 'OFF'}`);
+        case '3':
+          setDisplayMode('roughness');
           break;
-
-        case 's':
-          lights.spot.visible = !lights.spot.visible;
-          toggleLightHelper('spot');
-          console.log(`🔦 Spot Light: ${lights.spot.visible ? 'ON' : 'OFF'}`);
+        case '4':
+          setDisplayMode('all');
           break;
-
-        case 'h':
-          lights.hemisphere.visible = !lights.hemisphere.visible;
-          toggleLightHelper('hemisphere');
-          console.log(`🌓 Hemisphere Light: ${lights.hemisphere.visible ? 'ON' : 'OFF'}`);
+        case '5':
+          setDisplayMode('wireframe');
           break;
-
-        case 'l':
-          helpersVisible = !helpersVisible;
-          Object.keys(helpers).forEach(name => {
-            if (helpersVisible && lights[name].visible) {
-              scene.add(helpers[name]);
-            } else {
-              scene.remove(helpers[name]);
-            }
-          });
-          console.log(`🔧 Light Helpers: ${helpersVisible ? 'ON' : 'OFF'}`);
-          break;
-
         case 'r':
-          // Reset all lights to default state
-          lights.ambient.visible = true;
-          lights.directional.visible = true;
-          lights.point.visible = true;
-          lights.spot.visible = false;
-          lights.hemisphere.visible = true;
-          Object.keys(helpers).forEach(name => scene.remove(helpers[name]));
-          helpersVisible = false;
-          console.log('🔄 All lights reset to default');
+        case 'R':
+          camera.position.set(0, 2, 5);
+          controls.target.set(0, 1, 0);
+          setDisplayMode('all');
+          console.log('🔄 View reset');
           break;
       }
-      updateLightIndicators();
     });
 
     // ========================================
@@ -308,31 +522,21 @@
 
       const elapsedTime = clock.getElapsedTime();
 
-      // Rotate central sphere
-      sphere.rotation.y = elapsedTime * 0.3;
-      sphere.rotation.x = Math.sin(elapsedTime * 0.2) * 0.1;
+      // Rotate main sphere slowly
+      sphere.rotation.y = elapsedTime * 0.2;
 
-      // Rotate cubes
-      cubes.forEach((cube, i) => {
-        cube.rotation.y = elapsedTime * 0.5 + i * 0.2;
-        cube.position.y = 1 + Math.sin(elapsedTime * 2 + i) * 0.2;
-      });
+      // Rotate comparison cubes
+      cube1.rotation.y = elapsedTime * 0.5;
+      cube2.rotation.y = elapsedTime * 0.5;
+      cube3.rotation.y = elapsedTime * 0.5;
+      cube4.rotation.y = elapsedTime * 0.5;
 
-      // Animate point light in a circle
-      const radius = 5;
-      lights.point.position.x = Math.cos(elapsedTime * 0.5) * radius;
-      lights.point.position.z = Math.sin(elapsedTime * 0.5) * radius;
-      lights.point.position.y = 3 + Math.sin(elapsedTime) * 1;
-
-      // Pulse point light intensity
-      lights.point.intensity = 1 + Math.sin(elapsedTime * 3) * 0.3;
-
-      // Update helpers if visible
-      if (helpersVisible) {
-        Object.values(helpers).forEach(helper => {
-          if (helper.update) helper.update();
-        });
-      }
+      // Animate point lights
+      pointLight1.position.x = Math.cos(elapsedTime * 0.5) * 8;
+      pointLight1.position.z = Math.sin(elapsedTime * 0.5) * 8;
+      
+      pointLight2.position.x = Math.cos(elapsedTime * 0.5 + Math.PI) * 8;
+      pointLight2.position.z = Math.sin(elapsedTime * 0.5 + Math.PI) * 8;
 
       // Update controls
       controls.update();
@@ -355,38 +559,30 @@
     });
 
     // ========================================
-    // CONSOLE WELCOME
+    // CONSOLE INFO
     // ========================================
 
-    console.log('💡 Day 4: Let There Be Light!');
-    console.log('');
-    console.log('🌟 5 Different Light Types:');
-    console.log('  ✓ Ambient Light - Base illumination (no shadows)');
-    console.log('  ✓ Directional Light - Sunlight (parallel rays, shadows)');
-    console.log('  ✓ Point Light - Light bulb (radiates in all directions)');
-    console.log('  ✓ Spot Light - Flashlight (cone of light, shadows)');
-    console.log('  ✓ Hemisphere Light - Sky + ground ambient');
-    console.log('');
-    console.log('🎮 Controls:');
-    console.log('  [A] Toggle Ambient  | [D] Toggle Directional');
-    console.log('  [P] Toggle Point    | [S] Toggle Spot');
-    console.log('  [H] Toggle Hemisphere | [L] Show Light Helpers');
-    console.log('  [R] Reset All Lights');
-    console.log('');
-    console.log('💡 Try This:');
-    console.log('  1. Press [A] to see the scene without ambient light');
-    console.log('  2. Turn off all lights, then add them back one by one');
-    console.log('  3. Press [L] to visualize where lights are positioned');
-    console.log('  4. Press [S] to add dramatic spot light from above');
     console.log('');
     console.log('📚 What you\'re learning:');
-    console.log('  ✓ Different light types and when to use them');
-    console.log('  ✓ Shadow configuration and quality');
-    console.log('  ✓ Creating atmosphere and mood with lighting');
-    console.log('  ✓ Light helpers for debugging');
-
-    // Initial UI update
-    updateLightIndicators();
+    console.log('  ✓ Texture creation and loading');
+    console.log('  ✓ Color/Albedo maps - Base color');
+    console.log('  ✓ Normal maps - Surface detail illusion');
+    console.log('  ✓ Roughness maps - Surface smoothness variation');
+    console.log('  ✓ Metalness maps - Metallic area definition');
+    console.log('  ✓ AO maps - Ambient occlusion for depth');
+    console.log('  ✓ UV mapping - How textures wrap around geometry');
+    console.log('  ✓ Texture repeat and wrapping modes');
+    console.log('  ✓ PBR (Physically-Based Rendering) workflow');
+    console.log('');
+    console.log('🎮 Try these:');
+    console.log('  1-5: Switch between different texture display modes');
+    console.log('  R: Reset view');
+    console.log('  Mouse: Orbit around to see texture details');
+    console.log('');
+    console.log('💡 Notice:');
+    console.log('  - How normal maps add surface detail without geometry');
+    console.log('  - How roughness creates different surface properties');
+    console.log('  - How multiple maps combine for realistic materials');
   </script>
 </body>
 
