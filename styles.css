@@ -1,5 +1,5 @@
 /* ==========================================
-   Day 1: Base Styles for Three.js Scene
+   Day 7: Custom Geometry & Shaders Styles
    ========================================== */
 
 * {
@@ -11,7 +11,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #0a0a0f;
+  background-color: #0a0a1e;
 }
 
 canvas {
@@ -20,38 +20,139 @@ canvas {
   height: 100%;
 }
 
-/* Info Panel Styles */
+/* Info Panel Styles - Mountain/Tech Theme */
 .info-panel {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(20, 30, 50, 0.95), rgba(30, 40, 60, 0.95));
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(50, 150, 200, 0.4), 0 0 60px rgba(50, 150, 200, 0.15);
   z-index: 100;
-  max-width: 400px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 460px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  color: #e0f0ff;
 }
 
 .info-panel h1 {
   font-size: 24px;
-  color: #1a1a2e;
+  color: #a0d0ff;
   margin-bottom: 10px;
   font-weight: 700;
+  text-shadow: 0 0 15px rgba(160, 208, 255, 0.6);
 }
 
 .info-panel p {
   font-size: 14px;
-  color: #333;
+  color: #d0e0f0;
   margin: 6px 0;
   line-height: 1.6;
 }
 
 .info-panel strong {
-  color: #0066cc;
+  color: #80c0ff;
   font-weight: 600;
+}
+
+/* Shader Info Section */
+.shader-info {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(50, 150, 200, 0.15);
+  border-radius: 8px;
+  border-left: 3px solid #80c0ff;
+}
+
+.shader-info p {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #a0d0ff;
+  font-weight: 600;
+}
+
+.shader-info ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.shader-info li {
+  font-size: 12px;
+  color: #d0e8f8;
+  margin: 5px 0;
+  padding-left: 20px;
+  position: relative;
+}
+
+.shader-info li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #80c0ff;
+  font-weight: bold;
+}
+
+/* Controls Info Section */
+.controls-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(100, 200, 255, 0.3);
+}
+
+.controls-info p {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #c0d8f0;
+}
+
+.controls-info ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 6px;
+  margin-bottom: 10px;
+}
+
+.controls-info li {
+  font-size: 12px;
+  color: #b0c8e0;
+  margin: 4px 0;
+  padding-left: 16px;
+  position: relative;
+}
+
+.controls-info li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #80c0ff;
+  font-weight: bold;
+}
+
+/* Speed/Height display */
+#wave-speed,
+#wave-height {
+  color: #ffd966;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 8px rgba(255, 217, 102, 0.6);
+}
+
+/* Keyboard key styling */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: linear-gradient(180deg, #3a5a7a, #2a4a6a);
+  border: 1px solid #5a7a9a;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4), 0 0 10px rgba(100, 200, 255, 0.2);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #a0d0ff;
+  min-width: 20px;
+  text-align: center;
 }
 
 /* Mobile Responsiveness */
@@ -62,6 +163,8 @@ canvas {
     right: 10px;
     max-width: none;
     padding: 15px 18px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
   }
 
   .info-panel h1 {
@@ -71,14 +174,25 @@ canvas {
   .info-panel p {
     font-size: 12px;
   }
+
+  .controls-info li,
+  .shader-info li {
+    font-size: 11px;
+  }
+
+  kbd {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
 }
 
-/* Loading Animation (optional for future use) */
+/* Fade-in Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -87,4 +201,42 @@ canvas {
 
 .info-panel {
   animation: fadeIn 0.6s ease-out;
+}
+
+/* Tech glow animation */
+@keyframes techGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 8px 32px rgba(50, 150, 200, 0.4), 0 0 60px rgba(50, 150, 200, 0.15);
+    border-color: rgba(100, 200, 255, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 8px 32px rgba(50, 150, 200, 0.6), 0 0 80px rgba(50, 150, 200, 0.3);
+    border-color: rgba(100, 200, 255, 0.6);
+  }
+}
+
+.info-panel:hover {
+  animation: techGlow 2s ease-in-out infinite;
+}
+
+/* Scrollbar styling */
+.info-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.info-panel::-webkit-scrollbar-track {
+  background: rgba(20, 30, 50, 0.5);
+  border-radius: 3px;
+}
+
+.info-panel::-webkit-scrollbar-thumb {
+  background: rgba(100, 200, 255, 0.6);
+  border-radius: 3px;
+}
+
+.info-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 200, 255, 0.9);
 }
