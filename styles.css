@@ -1,5 +1,5 @@
 /* ==========================================
-   Day 2: Shapes & Materials Styles
+   Day 3: Camera & Controls Styles
    ========================================== */
 
 * {
@@ -11,7 +11,7 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #0f0f1e;
+  background-color: #0a0a15;
 }
 
 canvas {
@@ -25,57 +25,79 @@ canvas {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 255, 0.95));
+  background: linear-gradient(135deg, rgba(20, 20, 40, 0.95), rgba(30, 30, 50, 0.95));
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 100;
   max-width: 420px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  color: #e0e0ff;
 }
 
 .info-panel h1 {
   font-size: 24px;
-  color: #1a1a2e;
+  color: #a0c4ff;
   margin-bottom: 10px;
   font-weight: 700;
 }
 
 .info-panel p {
   font-size: 14px;
-  color: #333;
+  color: #d0d0e8;
   margin: 6px 0;
   line-height: 1.6;
 }
 
 .info-panel strong {
-  color: #0066cc;
+  color: #6699ff;
   font-weight: 600;
+}
+
+/* Camera Info Section */
+.camera-info {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(100, 150, 255, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #6699ff;
+}
+
+.camera-info p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.camera-info span {
+  color: #88bbff;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
 }
 
 /* Controls Info Section */
 .controls-info {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
 }
 
 .controls-info p {
   margin-bottom: 6px;
   font-size: 13px;
-  color: #555;
+  color: #c0c0d8;
 }
 
 .controls-info ul {
   list-style: none;
   padding-left: 0;
   margin-top: 6px;
+  margin-bottom: 10px;
 }
 
 .controls-info li {
   font-size: 12px;
-  color: #666;
+  color: #b0b0cc;
   margin: 4px 0;
   padding-left: 16px;
   position: relative;
@@ -85,8 +107,24 @@ canvas {
   content: '▸';
   position: absolute;
   left: 0;
-  color: #0066cc;
+  color: #6699ff;
   font-weight: bold;
+}
+
+/* Keyboard key styling */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: linear-gradient(180deg, #3a3a5a, #2a2a4a);
+  border: 1px solid #5a5a7a;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #a0c4ff;
+  min-width: 20px;
+  text-align: center;
 }
 
 /* Mobile Responsiveness */
@@ -97,6 +135,8 @@ canvas {
     right: 10px;
     max-width: none;
     padding: 15px 18px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
   }
 
   .info-panel h1 {
@@ -109,6 +149,11 @@ canvas {
 
   .controls-info li {
     font-size: 11px;
+  }
+
+  kbd {
+    font-size: 10px;
+    padding: 1px 4px;
   }
 }
 
@@ -128,16 +173,37 @@ canvas {
   animation: fadeIn 0.6s ease-out;
 }
 
-/* Subtle pulse animation for the panel */
-@keyframes subtlePulse {
+/* Subtle glow animation for the panel */
+@keyframes subtleGlow {
   0%, 100% {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    border-color: rgba(100, 150, 255, 0.3);
   }
   50% {
-    box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 8px 32px rgba(100, 150, 255, 0.3);
+    border-color: rgba(100, 150, 255, 0.6);
   }
 }
 
 .info-panel:hover {
-  animation: subtlePulse 2s ease-in-out infinite;
+  animation: subtleGlow 2s ease-in-out infinite;
+}
+
+/* Scrollbar styling for mobile */
+.info-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.info-panel::-webkit-scrollbar-track {
+  background: rgba(20, 20, 40, 0.5);
+  border-radius: 3px;
+}
+
+.info-panel::-webkit-scrollbar-thumb {
+  background: rgba(100, 150, 255, 0.5);
+  border-radius: 3px;
+}
+
+.info-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 150, 255, 0.7);
 }
