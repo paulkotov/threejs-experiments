@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 6: Animation & Transformations</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Day 6 Info Panel -->
+  <div class="info-panel">
+    <h1>🪐 Day 6: Animation & Transformations</h1>
+    <p><strong>Concept:</strong> Groups, Hierarchies & Complex Animations</p>
+    <p><strong>Skills:</strong> THREE.Group · Parent-Child · Orbital Motion</p>
+    <div class="animation-info">
+      <p><strong>🌌 Solar System Objects:</strong></p>
+      <ul>
+        <li>☀️ Sun - Central star (rotating)</li>
+        <li>🔵 Earth - Orbiting sun + rotating</li>
+        <li>🌙 Moon - Orbiting Earth + rotating</li>
+        <li>🔴 Mars - Outer orbit + rotating</li>
+        <li>🛰️ Mars Moon - Orbiting Mars</li>
+      </ul>
+    </div>
+    <div class="controls-info">
+      <p><strong>⌨️ Keyboard Controls:</strong></p>
+      <ul>
+        <li><kbd>Space</kbd> - Pause/Resume animation</li>
+        <li><kbd>+</kbd> / <kbd>=</kbd> - Speed up time</li>
+        <li><kbd>-</kbd> - Slow down time</li>
+        <li><kbd>R</kbd> - Reset animation</li>
+        <li><kbd>1</kbd>-<kbd>4</kbd> - Focus camera on objects</li>
+      </ul>
+      <p><strong>🖱️ Mouse:</strong> Drag to rotate · Scroll to zoom</p>
+      <p><strong>⏱️ Speed:</strong> <span id="speed-display">1.0x</span></p>
+    </div>
+  </div>
+
+  <!-- ThreeJS Core Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- OrbitControls -->
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Day 6 Script -->
+  <script>
+    // ========================================
+    // DAY 6: ANIMATION & TRANSFORMATIONS
+    // Learning: Groups, Hierarchies, Orbital Motion
+    // ========================================
+
+    console.log('🪐 Day 6: Animation & Transformations');
+    console.log('Building solar system...');
+
+    // SCENE SETUP
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000510);
+
+    // Add starfield background
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.7,
+      sizeAttenuation: true
+    });
+
+    const starsVertices = [];
+    for (let i = 0; i < 10000; i++) {
+      const x = (Math.random() - 0.5) * 2000;
+      const y = (Math.random() - 0.5) * 2000;
+      const z = (Math.random() - 0.5) * 2000;
+      starsVertices.push(x, y, z);
+    }
+
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starField);
+
+    // CAMERA
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      2000
+    );
+    camera.position.set(0, 50, 100);
+    camera.lookAt(0, 0, 0);
+
+    // RENDERER
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
+
+    // ORBIT CONTROLS
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 20;
+    controls.maxDistance = 300;
+
+    // ========================================
+    // LIGHTING
+    // ========================================
+
+    const ambientLight = new THREE.AmbientLight(0x333333, 0.5);
+    scene.add(ambientLight);
+
+    // Point light at sun position
+    const sunLight = new THREE.PointLight(0xffffff, 2, 300);
+    sunLight.position.set(0, 0, 0);
+    scene.add(sunLight);
+
+    // ========================================
+    // ANIMATION VARIABLES
+    // ========================================
+
+    let timeSpeed = 1.0;
+    let isPaused = false;
+    let animationTime = 0; // Accumulated animation time (accounts for speed changes)
+    const clock = new THREE.Clock();
+
+    // ========================================
+    // CREATE SUN
+    // ========================================
+
+    const sunGeometry = new THREE.SphereGeometry(8, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffaa00,
+      emissive: 0xffaa00,
+      emissiveIntensity: 1.0
+    });
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    scene.add(sun);
+
+    // Sun glow effect
+    const sunGlowGeometry = new THREE.SphereGeometry(9, 32, 32);
+    const sunGlowMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffaa00,
+      transparent: true,
+      opacity: 0.3
+    });
+    const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+    sun.add(sunGlow);
+
+    // ========================================
+    // CREATE EARTH SYSTEM (Group Hierarchy)
+    // ========================================
+
+    // Earth orbit group (rotates around sun)
+    const earthOrbitGroup = new THREE.Group();
+    scene.add(earthOrbitGroup);
+
+    // Earth itself
+    const earthGeometry = new THREE.SphereGeometry(3, 32, 32);
+    const earthMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2233ff,
+      emissive: 0x112244,
+      emissiveIntensity: 0.2,
+      roughness: 0.8,
+      metalness: 0.2
+    });
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    earth.position.x = 40; // Distance from sun
+    earthOrbitGroup.add(earth);
+
+    // Earth atmosphere glow
+    const atmosphereGeometry = new THREE.SphereGeometry(3.2, 32, 32);
+    const atmosphereMaterial = new THREE.MeshBasicMaterial({
+      color: 0x4488ff,
+      transparent: true,
+      opacity: 0.2,
+      side: THREE.BackSide
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    earth.add(atmosphere);
+
+    // Moon orbit group (child of Earth!)
+    const moonOrbitGroup = new THREE.Group();
+    earth.add(moonOrbitGroup); // HIERARCHY: Moon orbits Earth, Earth orbits Sun
+
+    // Moon
+    const moonGeometry = new THREE.SphereGeometry(0.8, 16, 16);
+    const moonMaterial = new THREE.MeshStandardMaterial({
+      color: 0xaaaaaa,
+      roughness: 1.0,
+      metalness: 0
+    });
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.x = 8; // Distance from Earth
+    moonOrbitGroup.add(moon);
+
+    // Orbit path visualization for Earth
+    const earthOrbitCurve = new THREE.EllipseCurve(
+      0, 0,        // center
+      40, 40,      // xRadius, yRadius
+      0, 2 * Math.PI,
+      false,
+      0
+    );
+    const earthOrbitPoints = earthOrbitCurve.getPoints(100);
+    const earthOrbitGeometry = new THREE.BufferGeometry().setFromPoints(
+      earthOrbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y))
+    );
+    const earthOrbitMaterial = new THREE.LineBasicMaterial({
+      color: 0x2233ff,
+      opacity: 0.3,
+      transparent: true
+    });
+    const earthOrbitLine = new THREE.Line(earthOrbitGeometry, earthOrbitMaterial);
+    scene.add(earthOrbitLine);
+
+    // ========================================
+    // CREATE MARS SYSTEM
+    // ========================================
+
+    // Mars orbit group
+    const marsOrbitGroup = new THREE.Group();
+    scene.add(marsOrbitGroup);
+
+    // Mars
+    const marsGeometry = new THREE.SphereGeometry(2, 32, 32);
+    const marsMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff4422,
+      emissive: 0x331100,
+      emissiveIntensity: 0.1,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const mars = new THREE.Mesh(marsGeometry, marsMaterial);
+    mars.position.x = 65; // Distance from sun
+    marsOrbitGroup.add(mars);
+
+    // Mars moon (Phobos-like)
+    const marsMoonOrbitGroup = new THREE.Group();
+    mars.add(marsMoonOrbitGroup);
+
+    const marsMoonGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const marsMoonMaterial = new THREE.MeshStandardMaterial({
+      color: 0x888888,
+      roughness: 1.0
+    });
+    const marsMoon = new THREE.Mesh(marsMoonGeometry, marsMoonMaterial);
+    marsMoon.position.x = 5;
+    marsMoonOrbitGroup.add(marsMoon);
+
+    // Mars orbit path
+    const marsOrbitCurve = new THREE.EllipseCurve(0, 0, 65, 65, 0, 2 * Math.PI);
+    const marsOrbitPoints = marsOrbitCurve.getPoints(100);
+    const marsOrbitGeometry = new THREE.BufferGeometry().setFromPoints(
+      marsOrbitPoints.map(p => new THREE.Vector3(p.x, 0, p.y))
+    );
+    const marsOrbitMaterial = new THREE.LineBasicMaterial({
+      color: 0xff4422,
+      opacity: 0.3,
+      transparent: true
+    });
+    const marsOrbitLine = new THREE.Line(marsOrbitGeometry, marsOrbitMaterial);
+    scene.add(marsOrbitLine);
+
+    // ========================================
+    // HELPER VISUALIZATIONS
+    // ========================================
+
+    // Orbital plane grid
+    const gridHelper = new THREE.GridHelper(200, 40, 0x444444, 0x222222);
+    gridHelper.material.opacity = 0.2;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
+
+    // ========================================
+    // KEYBOARD CONTROLS
+    // ========================================
+
+    function updateSpeedDisplay() {
+      document.getElementById('speed-display').textContent = timeSpeed.toFixed(1) + 'x';
+    }
+
+    window.addEventListener('keydown', (event) => {
+      switch (event.key) {
+        case ' ':
+          isPaused = !isPaused;
+          console.log(isPaused ? '⏸️ Animation paused' : '▶️ Animation resumed');
+          // Don't stop/start clock - just skip updates when paused
+          // Clock keeps running to prevent elapsed time jumps
+          break;
+        case '+':
+        case '=':
+          timeSpeed = Math.min(timeSpeed + 0.5, 10);
+          updateSpeedDisplay();
+          console.log(`⏩ Speed: ${timeSpeed.toFixed(1)}x`);
+          break;
+        case '-':
+        case '_':
+          timeSpeed = Math.max(timeSpeed - 0.5, 0.1);
+          updateSpeedDisplay();
+          console.log(`⏪ Speed: ${timeSpeed.toFixed(1)}x`);
+          break;
+        case 'r':
+        case 'R':
+          timeSpeed = 1.0;
+          isPaused = false;
+          animationTime = 0; // Reset accumulated animation time
+          // Reset positions to initial state
+          earthOrbitGroup.rotation.y = 0;
+          marsOrbitGroup.rotation.y = 0;
+          earth.rotation.y = 0;
+          mars.rotation.y = 0;
+          moonOrbitGroup.rotation.y = 0;
+          marsMoonOrbitGroup.rotation.y = 0;
+          sun.rotation.y = 0;
+          updateSpeedDisplay();
+          console.log('🔄 Animation reset');
+          break;
+        case '1':
+          // Focus on Sun
+          camera.position.set(0, 20, 40);
+          controls.target.set(0, 0, 0);
+          console.log('📸 Camera focused on Sun');
+          break;
+        case '2':
+          // Follow Earth
+          camera.position.set(40, 10, 50);
+          controls.target.set(40, 0, 0);
+          console.log('📸 Camera focused on Earth');
+          break;
+        case '3':
+          // Follow Mars
+          camera.position.set(65, 15, 75);
+          controls.target.set(65, 0, 0);
+          console.log('📸 Camera focused on Mars');
+          break;
+        case '4':
+          // Full system view
+          camera.position.set(0, 80, 120);
+          controls.target.set(0, 0, 0);
+          console.log('📸 Full system view');
+          break;
+      }
+    });
+
+    // ========================================
+    // ANIMATION LOOP
+    // ========================================
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Always call getDelta() to prevent time accumulation
+      const delta = clock.getDelta();
+
+      if (!isPaused) {
+        // Accumulate animation time with current speed
+        animationTime += delta * timeSpeed;
+        const elapsed = animationTime;
+
+        // ===== SUN ANIMATIONS =====
+        // Sun rotates on its axis
+        sun.rotation.y += delta * timeSpeed * 0.2;
+
+        // Pulsing glow effect
+        sunGlow.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.05);
+
+        // ===== EARTH SYSTEM ANIMATIONS =====
+        // Earth revolves around sun (group rotation)
+        earthOrbitGroup.rotation.y += delta * timeSpeed * 0.3;
+
+        // Earth rotates on its own axis (local rotation)
+        earth.rotation.y += delta * timeSpeed * 1.0;
+
+        // Earth tilts (axial tilt like real Earth)
+        earth.rotation.z = 0.4; // ~23 degrees tilt
+
+        // Moon revolves around Earth (group rotation)
+        moonOrbitGroup.rotation.y += delta * timeSpeed * 1.5;
+
+        // Moon rotates (tidally locked - same as orbit in reality)
+        moon.rotation.y += delta * timeSpeed * 1.5;
+
+        // ===== MARS SYSTEM ANIMATIONS =====
+        // Mars revolves around sun (slower than Earth)
+        marsOrbitGroup.rotation.y += delta * timeSpeed * 0.16;
+
+        // Mars rotates on its axis
+        mars.rotation.y += delta * timeSpeed * 0.95;
+
+        // Mars moon orbits Mars (fast orbit)
+        marsMoonOrbitGroup.rotation.y += delta * timeSpeed * 2.0;
+
+        // Mars moon rotation
+        marsMoon.rotation.y += delta * timeSpeed * 2.0;
+
+        // ===== VISUAL ENHANCEMENTS =====
+        // Slight vertical bobbing for visual interest
+        earth.position.y = Math.sin(elapsed * 0.5) * 0.5;
+        mars.position.y = Math.sin(elapsed * 0.3) * 0.3;
+
+        // Orbit lines fade in/out subtly
+        earthOrbitLine.material.opacity = 0.2 + Math.sin(elapsed) * 0.1;
+        marsOrbitLine.material.opacity = 0.2 + Math.sin(elapsed + Math.PI) * 0.1;
+
+        // Slowly rotate star field for depth
+        starField.rotation.y += delta * timeSpeed * 0.01;
+      }
+
+      // Update controls
+      controls.update();
+
+      // Render
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ========================================
+    // WINDOW RESIZE
+    // ========================================
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    });
+
+    // ========================================
+    // CONSOLE INFO
+    // ========================================
+
+    console.log('');
+    console.log('📚 What you\'re learning:');
+    console.log('  ✓ THREE.Group - Hierarchical transformations');
+    console.log('  ✓ Parent-child relationships');
+    console.log('  ✓ Local vs world coordinates');
+    console.log('  ✓ Orbital motion (revolution vs rotation)');
+    console.log('  ✓ Multi-level hierarchies (Sun → Earth → Moon)');
+    console.log('  ✓ Animation timing and speed control');
+    console.log('  ✓ Delta time for frame-independent animation');
+    console.log('');
+    console.log('🎮 Try these:');
+    console.log('  Space: Pause and observe the hierarchy');
+    console.log('  +/-: Speed up/slow down time');
+    console.log('  1-4: Focus camera on different objects');
+    console.log('  R: Reset animation');
+    console.log('');
+    console.log('💡 Key Concepts:');
+    console.log('  - Revolution = orbit around parent');
+    console.log('  - Rotation = spin on own axis');
+    console.log('  - Groups enable complex motion hierarchies');
+    console.log('  - Moon inherits Earth\'s orbital motion automatically!');
+
+    // Initial speed display
+    updateSpeedDisplay();
+  </script>
+</body>
+
+</html>
