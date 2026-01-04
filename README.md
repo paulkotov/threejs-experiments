@@ -80,7 +80,7 @@ A comprehensive, hands-on journey from Three.js beginner to advanced developer. 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/threejs-experiments.git
+   git clone https://github.com/paulkotov/threejs-experiments.git
    cd threejs-experiments
    ```
 
